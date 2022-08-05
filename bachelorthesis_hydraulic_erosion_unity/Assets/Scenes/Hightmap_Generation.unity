@@ -771,12 +771,12 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 837612961}
         m_TargetAssemblyTypeName: PerlinNoiseMapGenerator, Assembly-CSharp
-        m_MethodName: set_Xwidth
-        m_Mode: 3
+        m_MethodName: set_PXwidth
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
+          m_IntArgument: 500
           m_FloatArgument: 0
           m_StringArgument: 
           m_BoolArgument: 0
@@ -1142,7 +1142,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 871441952}
   m_HandleRect: {fileID: 871441951}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -1285,8 +1285,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 837612961}
         m_TargetAssemblyTypeName: PerlinNoiseMapGenerator, Assembly-CSharp
-        m_MethodName: set_Yheight
-        m_Mode: 3
+        m_MethodName: set_PYheight
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -1525,8 +1525,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 837612961}
         m_TargetAssemblyTypeName: PerlinNoiseMapGenerator, Assembly-CSharp
-        m_MethodName: set_OffsetX
-        m_Mode: 4
+        m_MethodName: set_POffsetX
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -2953,8 +2953,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 837612961}
         m_TargetAssemblyTypeName: PerlinNoiseMapGenerator, Assembly-CSharp
-        m_MethodName: set_OffsetY
-        m_Mode: 4
+        m_MethodName: set_POffsetY
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -3779,8 +3779,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 837612961}
         m_TargetAssemblyTypeName: PerlinNoiseMapGenerator, Assembly-CSharp
-        m_MethodName: set_Strength
-        m_Mode: 4
+        m_MethodName: set_PStrength
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
@@ -5597,8 +5597,8 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 837612961}
         m_TargetAssemblyTypeName: PerlinNoiseMapGenerator, Assembly-CSharp
-        m_MethodName: set_Scale
-        m_Mode: 4
+        m_MethodName: set_PScale
+        m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
           m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
