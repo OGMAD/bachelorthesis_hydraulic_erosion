@@ -7,11 +7,10 @@ public class EventHandler : MonoBehaviour
 {
     public GameObject Content;
     public GameObject CloudmapItem_prefab;
-    private List<GameObject> CloudmapItem_List = new List<GameObject>();
+    private List<CloudmapItem> CloudmapItem_List = new List<CloudmapItem>();
 
     public string PName { get; set; }
-    public string Name { get; set; }
-
+    
     public string PXwidth { get; set; }
     public string PYheight { get; set; }
 
@@ -21,6 +20,8 @@ public class EventHandler : MonoBehaviour
     public string PStrength { get; set; }
     public string PScale { get; set; }
 
+
+    private string Name { get; set; }
     private int Xwidth { get; set; }
     private int Yheight { get; set; }
 
@@ -49,28 +50,47 @@ public class EventHandler : MonoBehaviour
         GameObject CloudmapItem = Instantiate(CloudmapItem_prefab);
         CloudmapItem.transform.SetParent(Content.transform);
         CloudmapItem.transform.localScale = new Vector3(1,1,1);
-        CloudmapItem.GetComponent<Button>().onClick.AddListener(() => ChangeColor(CloudmapItem));
-        CloudmapItem_List.Add(CloudmapItem);
+        CloudmapItem.GetComponent<Button>().onClick.AddListener(() => SetAsActive(CloudmapItem));
+        CloudmapItem item = new CloudmapItem();
+        item.obj = CloudmapItem;
+        CloudmapItem_List.Add(item);
     }
 
-    //public void Update()
-    //{
-    //    Debug.Log("Update");
-    //    for (int x = 0; x < CloudmapItem_List.Count; x++)
-    //    {
-    //        CloudmapItem_List[x].GetComponent<Button>().onClick.AddListener(() => ChangeColor(CloudmapItem_List[x], x));
-    //    }
-    //}
-
-    private void ChangeColor(GameObject obj)
+    private void SetAsActive(GameObject obj)
     {
-        System.Random random = new System.Random();
-        byte a = (byte)random.Next(256);
-        byte b = (byte)random.Next(256);
-        byte g = (byte)random.Next(256);
-        byte r = (byte)random.Next(256);
+        for(int x = 0; x < CloudmapItem_List.Count; x++)
+        {
+            CloudmapItem_List[x].obj.gameObject.GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+        }
 
-        Debug.Log("(" + a + ", " + b + ", " + g + ", " + r + ")");
-        obj.GetComponent<Image>().color = new Color32(a, b, g, r);
+        obj.GetComponent<Image>().color = new Color32(255, 215, 210, 255);
+
+        for (int x = 0; x < CloudmapItem_List.Count; x++)
+        {
+            if (CloudmapItem_List[x].obj.gameObject.GetComponent<Image>().color == new Color32(255, 255, 255, 255))
+            {
+                CloudmapItem_List[x].IsActive = false;
+            }
+            else
+            {
+                CloudmapItem_List[x].IsActive = true;
+            }
+        }
     }
+}
+
+public class CloudmapItem
+{
+    public GameObject obj { get; set; }
+    public string Name { get; set; }
+    public int Xwidth { get; set; }
+    public int Yheight { get; set; }
+
+    public float OffsetX { get; set; }
+    public float OffsetY { get; set; }
+
+    public float Strength { get; set; }
+    public float Scale { get; set; }
+
+    public bool IsActive { get; set; }
 }
