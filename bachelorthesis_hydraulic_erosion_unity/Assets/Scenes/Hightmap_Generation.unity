@@ -415,6 +415,8 @@ MonoBehaviour:
   GOffsertY: {fileID: 1065556149}
   GStrength: {fileID: 1203214501}
   GScale: {fileID: 1755376592}
+  Selected_img: {fileID: 2115277491}
+  Overall_img: {fileID: 764248474}
 --- !u!1 &169946396
 GameObject:
   m_ObjectHideFlags: 0
@@ -2055,7 +2057,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0.8057232, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -6101,7 +6103,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1

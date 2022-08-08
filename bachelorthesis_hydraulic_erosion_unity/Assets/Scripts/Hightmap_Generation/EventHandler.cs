@@ -37,6 +37,9 @@ public class EventHandler : MonoBehaviour
 
     private float Strength { get; set; }
     private float Scale { get; set; }
+
+    public Image Selected_img;
+    public Image Overall_img;
     #endregion
 
     private void CastAll()
@@ -59,7 +62,7 @@ public class EventHandler : MonoBehaviour
         CloudmapItem.transform.SetParent(Content.transform);
         CloudmapItem.transform.localScale = new Vector3(1,1,1);
         CloudmapItem.GetComponent<Button>().onClick.AddListener(() => SetAsActive(CloudmapItem));
-        CloudmapItem item = new CloudmapItem();
+        CloudmapItem item = new CloudmapItem(Selected_img);
         item.obj = CloudmapItem;
         CloudmapItem_List.Add(item);
     }
@@ -96,7 +99,9 @@ public class EventHandler : MonoBehaviour
         GOffsertY.text = item.OffsetY.ToString();
         GStrength.text = item.Strength.ToString();
         GScale.text = item.Scale.ToString();
-        Debug.Log("SetValuesInEdit");
+        
+        Selected_img.sprite = item.obj_img.sprite;
+        
     }
 
     private CloudmapItem GetActiveCloudmapItem()
@@ -122,12 +127,49 @@ public class EventHandler : MonoBehaviour
         item.OffsetY = OffsetY;
         item.Strength = Strength;
         item.Scale = Scale;
+
+        item.SetNameAndImg();
+        item.GeneratePerlinNoise();
+        Selected_img.sprite = item.obj_img.sprite;
+
+        GenerateOverallResault();
+    }
+
+    private void GenerateOverallResault()
+    {
+        Texture2D texture = new Texture2D(Xwidth, Yheight);
+        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+
+        for (int x = 1; x < CloudmapItem_List.Count; x++)
+        {
+            sprite = BlendSpritesTogether(CloudmapItem_List[x-1].obj_img.sprite, CloudmapItem_List[x].obj_img.sprite);
+        }
+        Overall_img.sprite = sprite;
+    }
+
+    private Sprite BlendSpritesTogether(Sprite SpriteA, Sprite SpriteB)
+    {
+        Texture2D textureA = SpriteA.texture;
+        Texture2D textureB = SpriteB.texture;
+        Texture2D textureC = new Texture2D(Xwidth, Yheight);
+        for (int x = 0; x< textureA.width; x++)
+        {
+            for(int y = 0; y< textureA.height;y++)
+            {
+                Color color = (textureA.GetPixel(x, y) * textureB.GetPixel(x, y));
+                textureC.SetPixel(x, y, color);
+            }
+        }
+        textureC.Apply();
+        return Sprite.Create(textureC, new Rect(0, 0, textureC.width, textureC.height), Vector2.zero);
     }
 }
 
 public class CloudmapItem
 {
     public GameObject obj { get; set; }
+    public Text obj_name { get; set; }
+    public Image obj_img { get; set; }
     public string Name { get; set; }
     public int Xwidth { get; set; }
     public int Yheight { get; set; }
@@ -140,7 +182,7 @@ public class CloudmapItem
 
     public bool IsActive { get; set; }
 
-    public CloudmapItem()
+    public CloudmapItem(Image image)
     {
         Name = "SomeHightmap";
         Xwidth = 255;
@@ -150,5 +192,41 @@ public class CloudmapItem
         Strength = 1;
         Scale = 4;
         IsActive = false;
+
+        obj_img = image;
+    }
+
+    public void SetNameAndImg()
+    {
+        obj_name = obj.GetComponentsInChildren<Text>()[0];
+        obj_img = obj.GetComponentsInChildren<Image>()[1];
+
+        obj_name.text = Name;
+    }
+
+    public void GeneratePerlinNoise()
+    {
+        Texture2D texture = new Texture2D(Xwidth, Yheight);
+
+        for (int x = 0; x < Xwidth; x++)
+        {
+            for (int y = 0; y < Yheight; y++)
+            {
+                Color color = CalculateColor(x, y);
+                texture.SetPixel(x, y, color);
+            }
+        }
+
+        texture.Apply();
+        obj_img.sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+    }
+
+    Color CalculateColor(int x, int y)
+    {
+        float xCoord = (float)x / Xwidth * Scale + OffsetX;
+        float yCoord = (float)y / Yheight * Scale + OffsetY;
+
+        float sample = Mathf.PerlinNoise(xCoord, yCoord)+(Strength/100);
+        return new Color(sample, sample, sample);
     }
 }
