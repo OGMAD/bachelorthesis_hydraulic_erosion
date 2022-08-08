@@ -2,8 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
-public class EventHandler : MonoBehaviour
+public class HightmapGenerationEventHandler : MonoBehaviour
 {
     public GameObject Content;
     public GameObject CloudmapItem_prefab;
@@ -162,6 +163,16 @@ public class EventHandler : MonoBehaviour
         }
         textureC.Apply();
         return Sprite.Create(textureC, new Rect(0, 0, textureC.width, textureC.height), Vector2.zero);
+    }
+
+    public void LoadHeightmap()
+    {
+
+    }
+
+    public void Submit()
+    {
+
     }
 }
 

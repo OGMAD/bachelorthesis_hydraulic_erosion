@@ -4,5 +4,14 @@
 EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
-  m_Scenes: []
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/3D_Erosion.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  - enabled: 1
+    path: Assets/Scenes/Heightmap_Uniformation.unity
+    guid: 24af31efeea44354cb69907db2dc83c3
+  - enabled: 1
+    path: Assets/Scenes/Hightmap_Generation.unity
+    guid: 23a99d31adbb62d4b8b973dea53d1f94
   m_configObjects: {}
