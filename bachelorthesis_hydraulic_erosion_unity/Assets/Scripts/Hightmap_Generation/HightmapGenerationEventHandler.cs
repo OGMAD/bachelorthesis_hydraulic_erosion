@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEditor;
 
 public class HightmapGenerationEventHandler : MonoBehaviour
 {
@@ -165,14 +166,22 @@ public class HightmapGenerationEventHandler : MonoBehaviour
         return Sprite.Create(textureC, new Rect(0, 0, textureC.width, textureC.height), Vector2.zero);
     }
 
+    private string path;
     public void LoadHeightmap()
     {
-
+        path = EditorUtility.OpenFilePanel("Overwrite with png", "", "png");
+        if(path != null)
+        {
+            WWW www = new WWW("file:///" + path);
+            StateNameController.HeightMapSprite = Sprite.Create(www.texture, new Rect(0, 0, www.texture.width, www.texture.height), Vector2.zero);
+        }
+        SceneManager.LoadScene("Heightmap_Uniformation");
     }
 
     public void Submit()
     {
-
+        StateNameController.HeightMapSprite = Overall_img.sprite;
+        SceneManager.LoadScene("Heightmap_Uniformation");
     }
 }
 
