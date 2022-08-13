@@ -10,7 +10,8 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
     public string YHeightKMString { get; set; }
     public Image HeightMapImage;
     private Sprite SourceHeightMapSprite;
-    private Sprite TargetSprite;
+    private Sprite TargetSpriteX;
+    private Sprite TargetSpriteXY;
     private float XWidthKM;
     private float YHeightKM;
     private int SourceXWidthPX;
@@ -32,8 +33,13 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
     {
         CalculateTargetDimensions();
         CalculateScaleFactors();
-        Texture2D texture = new Texture2D(TargetXWidthPX, TargetYHeightPX);
-        TargetSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
+
+        Texture2D textureX = new Texture2D(TargetXWidthPX, SourceYHeightPX);
+        TargetSpriteX = Sprite.Create(textureX, new Rect(0, 0, textureX.width, textureX.height), Vector2.zero);
+
+        Texture2D textureXY = new Texture2D(TargetXWidthPX, TargetYHeightPX);
+        TargetSpriteXY = Sprite.Create(textureXY, new Rect(0, 0, textureXY.width, textureXY.height), Vector2.zero);
+
         CalculateTargetTexture();
     }
     private void CalculateTargetDimensions()
@@ -65,18 +71,17 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
             MixedScaling();
         }
 
-        TargetSprite.texture.Apply();
-        HeightMapImage.sprite = TargetSprite;
+        TargetSpriteXY.texture.Apply();
+        HeightMapImage.sprite = TargetSpriteXY;
     }
 
     private void ScaleUp()
     {
-        //kinda works
         for(int x = 0; x < TargetXWidthPX; x++)
         {
             for(int y = 0; y < TargetYHeightPX; y++)
             {
-                TargetSprite.texture.SetPixel(x, y, SourceHeightMapSprite.texture.GetPixel((int)(x / ScaleFactorX), (int)(y / ScaleFactorY)));
+                TargetSpriteXY.texture.SetPixel(x, y, SourceHeightMapSprite.texture.GetPixel((int)(x / ScaleFactorX), (int)(y / ScaleFactorY)));
             }
         }
     }
@@ -86,12 +91,12 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
         {
             for (int y = 0; y < TargetYHeightPX; y++)
             {
-                TargetSprite.texture.SetPixel(x, y, ScaleDownPixelgroupFor(x,y));
+                TargetSpriteXY.texture.SetPixel(x, y, ScaleDownPixelgroupFor(SourceHeightMapSprite,x, y));
             }
         }
     }
 
-    private Color ScaleDownPixelgroupFor(int x, int y)
+    private Color ScaleDownPixelgroupFor(Sprite sprite, int x, int y)
     {
         float xa = x / ScaleFactorX;
         float xb = xa + (1 / ScaleFactorX);
@@ -108,18 +113,128 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
         {
             for(int yi = (int) ya; yi <= (int) yb; yi++)
             {
-                r += SourceHeightMapSprite.texture.GetPixel(xi, yi).r;
-                g += SourceHeightMapSprite.texture.GetPixel(xi, yi).g;
-                b += SourceHeightMapSprite.texture.GetPixel(xi, yi).b;
+                r += sprite.texture.GetPixel(xi, yi).r;
+                g += sprite.texture.GetPixel(xi, yi).g;
+                b += sprite.texture.GetPixel(xi, yi).b;
                 count++;
             }
         }
-        Debug.Log("----------------");
         return new Color(r / count, g / count, b / count);
     }
 
     private void MixedScaling()
     {
+        ScaleOnX();
+        ScaleOnY();
+        TargetSpriteXY.texture.Apply();
+    }
 
+    private void ScaleOnX()
+    {
+        char Axis = 'x';
+
+        if(ScaleFactorX == 1)
+        {
+            ConfirmScaleOnSingleAxis(Axis);
+        } else if(ScaleFactorX < 1)
+        {
+            DownscaleOnSingleAxis(Axis);
+        } else if(ScaleFactorX > 1)
+        {
+            UpscaleOnSingleAxis(Axis);
+        }
+    }
+
+    private void ScaleOnY()
+    {
+        char Axis = 'y';
+
+        if (ScaleFactorY == 1)
+        {
+            ConfirmScaleOnSingleAxis(Axis);
+        }
+        else if (ScaleFactorY < 1)
+        {
+            DownscaleOnSingleAxis(Axis);
+        }
+        else if (ScaleFactorY > 1)
+        {
+            UpscaleOnSingleAxis(Axis);
+        }
+    }
+
+    private void UpscaleOnSingleAxis(char Axis)
+    {
+        switch (Axis)
+        {
+            case 'x':
+                for (int x = 0; x < TargetXWidthPX; x++)
+                {
+                    for (int y = 0; y < SourceYHeightPX; y++)
+                    {
+                        TargetSpriteX.texture.SetPixel(x, y, SourceHeightMapSprite.texture.GetPixel((int)(x / ScaleFactorX), y));
+                    }
+                }
+                break;
+            case 'y':
+                for (int x = 0; x < TargetXWidthPX; x++)
+                {
+                    for (int y = 0; y < TargetYHeightPX; y++)
+                    {
+                        TargetSpriteXY.texture.SetPixel(x, y, TargetSpriteX.texture.GetPixel(x, (int)(y / ScaleFactorY)));
+                    }
+                }
+                break;
+        }
+    }
+
+    private void DownscaleOnSingleAxis(char Axis)
+    {
+        switch (Axis)
+        {
+            case 'x':
+                for (int x = 0; x < TargetXWidthPX; x++)
+                {
+                    for (int y = 0; y < SourceYHeightPX; y++)
+                    {
+                        TargetSpriteX.texture.SetPixel(x, y, ScaleDownPixelgroupFor(SourceHeightMapSprite, x, y));
+                    }
+                }
+                break;
+            case 'y':
+                for (int x = 0; x < TargetXWidthPX; x++)
+                {
+                    for (int y = 0; y < TargetYHeightPX; y++)
+                    {
+                        TargetSpriteXY.texture.SetPixel(x, y, ScaleDownPixelgroupFor(TargetSpriteX, x, y));
+                    }
+                }
+                break;
+        }
+    }
+
+    private void ConfirmScaleOnSingleAxis(char Axis)
+    {
+        switch (Axis)
+        {
+            case 'x':
+                for (int x = 0; x < TargetXWidthPX; x++)
+                {
+                    for (int y = 0; y < SourceYHeightPX; y++)
+                    {
+                        TargetSpriteX.texture.SetPixel(x, y, SourceHeightMapSprite.texture.GetPixel(x,y));
+                    }
+                }
+                break;
+            case 'y':
+                for (int x = 0; x < TargetXWidthPX; x++)
+                {
+                    for (int y = 0; y < TargetYHeightPX; y++)
+                    {
+                        TargetSpriteXY.texture.SetPixel(x, y, TargetSpriteX.texture.GetPixel(x, y));
+                    }
+                }
+                break;
+        }
     }
 }
