@@ -21,6 +21,9 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
     private float ScaleFactorX;
     private float ScaleFactorY;
 
+    public Slider ProgressBar;
+    private float Progress;
+
 
     void Start()
     {

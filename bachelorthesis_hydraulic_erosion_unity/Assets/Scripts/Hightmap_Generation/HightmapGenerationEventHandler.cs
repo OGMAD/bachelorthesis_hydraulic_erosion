@@ -7,11 +7,10 @@ using UnityEditor;
 
 public class HightmapGenerationEventHandler : MonoBehaviour
 {
+    #region Variables
     public GameObject Content;
     public GameObject CloudmapItem_prefab;
     private List<CloudmapItem> CloudmapItem_List = new List<CloudmapItem>();
-
-    #region Variables
     public string PName { get; set; }
     public InputField GName;
     
@@ -42,6 +41,9 @@ public class HightmapGenerationEventHandler : MonoBehaviour
 
     public Image Selected_img;
     public Image Overall_img;
+
+    public Slider ProgressBar;
+    private float Progress;
     #endregion
 
     private void CastAll()
@@ -139,6 +141,8 @@ public class HightmapGenerationEventHandler : MonoBehaviour
 
     private void GenerateOverallResault()
     {
+        Progress = 0.0f;
+        ProgressBar.value = Progress;
         Texture2D texture = new Texture2D(Xwidth, Yheight);
         Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), Vector2.zero);
 
@@ -161,7 +165,10 @@ public class HightmapGenerationEventHandler : MonoBehaviour
                 Color color = (textureA.GetPixel(x, y) * textureB.GetPixel(x, y));
                 textureC.SetPixel(x, y, color);
             }
+            Progress += ((float)x / (float)textureA.width) / (float)CloudmapItem_List.Count;
+            ProgressBar.value = Progress;
         }
+        ProgressBar.value = Progress;
         textureC.Apply();
         return Sprite.Create(textureC, new Rect(0, 0, textureC.width, textureC.height), Vector2.zero);
     }
