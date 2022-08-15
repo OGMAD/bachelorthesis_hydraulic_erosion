@@ -120,9 +120,36 @@ public class HightmapGenerationEventHandler : MonoBehaviour
         return null;
     }
 
+    private void SetDimantionsForAll()
+    {
+        bool Regenerate = false;
+        for(int i = 0; i < CloudmapItem_List.Count; i++)
+        {
+            if(CloudmapItem_List[i].Xwidth != Xwidth || CloudmapItem_List[i].Yheight != Yheight)
+            {
+                Regenerate = true;
+            }
+            CloudmapItem_List[i].Xwidth = Xwidth;
+            CloudmapItem_List[i].Yheight = Yheight;
+        }
+        if (Regenerate)
+        {
+            RegenerateHeightmaps();
+        }
+    }
+
+    private void RegenerateHeightmaps()
+    {
+        for (int i = 0; i < CloudmapItem_List.Count; i++)
+        {
+            CloudmapItem_List[i].GeneratePerlinNoise();
+        }
+    }
+
     public void GeneratePerlinNoiseMap()
     {
         CastAll();
+        SetDimantionsForAll();
         CloudmapItem item = GetActiveCloudmapItem();
         item.Name = Name;
         item.Xwidth = Xwidth;

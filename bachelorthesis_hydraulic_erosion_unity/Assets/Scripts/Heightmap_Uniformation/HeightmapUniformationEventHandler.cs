@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class HeightmapUniformationEventHandler : MonoBehaviour
@@ -239,5 +240,11 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
                 }
                 break;
         }
+    }
+
+    public void Submit()
+    {
+        StateNameController.HeightMapSpriteUniformated = TargetSpriteXY;
+        SceneManager.LoadScene("3D_Erosion");
     }
 }
