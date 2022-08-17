@@ -9,6 +9,9 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
     public static int PixelPerKilometer = 1000;
     public string XWidthKMString { get; set; }
     public string YHeightKMString { get; set; }
+    public string HighestPointMString { get; set; }
+    public string LowestPointMString { get; set; }
+
     public Image HeightMapImage;
     private Sprite SourceHeightMapSprite;
     private Sprite TargetSpriteX;
@@ -245,6 +248,8 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
     public void Submit()
     {
         StateNameController.HeightMapSpriteUniformated = TargetSpriteXY;
+        StateNameController.HighestPoint = int.Parse(HighestPointMString);
+        StateNameController.LowestPoint = int.Parse(LowestPointMString);
         SceneManager.LoadScene("3D_Erosion");
     }
 }
