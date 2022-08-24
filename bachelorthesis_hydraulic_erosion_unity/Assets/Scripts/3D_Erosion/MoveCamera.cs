@@ -9,14 +9,17 @@ public class MoveCamera : MonoBehaviour
     [SerializeField] private float HorizontalInput;
     [SerializeField] private float ForwardInput;
     [SerializeField] private float RotationalInput;
+    [SerializeField] private float FlightInput;
     void LateUpdate()
     {
         HorizontalInput = Input.GetAxis("Horizontal");
         ForwardInput = Input.GetAxis("Vertical");
         RotationalInput = Input.GetAxis("Rotational");
+        FlightInput = Input.GetAxis("Flight");
 
         transform.position = transform.position + Vector3.forward * ForwardInput * MovementSpeed;
         transform.position = transform.position + Vector3.right * HorizontalInput * MovementSpeed;
+        transform.position = transform.position + Vector3.up * FlightInput * MovementSpeed;
         transform.Rotate(Vector3.up, RotationalInput * TurnSpeed * Time.deltaTime);
     }
 }

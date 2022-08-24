@@ -26,7 +26,7 @@ public class Vertex
         set
         {
             _yCoord = value;
-            RenderQuads();
+            //RenderQuads();
         }
     }
     public int ZCoord { get; set; }

@@ -13,7 +13,7 @@ public class ThreeDErosionEventHandler : MonoBehaviour
     {
         GetAndSetVariables();
         TransferHightmapToObjects();
-        MeshGenerationHelper.CreatePlane(5, 10);
+        //MeshGenerationHelper.CreatePlane();
     }
 
     // Update is called once per frame
@@ -35,7 +35,7 @@ public class ThreeDErosionEventHandler : MonoBehaviour
 
         vertices = CreateVertices(vertices);
         FindNeighbours(vertices);
-        CreateQuadsAndLinkThemToTheVertices();
+        CreateQuadsAndLinkThemToTheVertices(vertices);
     }
 
     private Vertex[,] CreateVertices(Vertex[,] vertices)
@@ -50,49 +50,61 @@ public class ThreeDErosionEventHandler : MonoBehaviour
         return vertices;
     }
 
-    private void FindNeighbours(Vertex[,] vertices)
+    private void FindNeighbours(Vertex[,] Vertices)
     {
         for (int Column = 0; Column < HeightMap.texture.width; Column++)
         {
             for (int Row = 0; Row < HeightMap.texture.height; Row++)
             {
+                (int, int) UpperLeft = (Row - 1, Column - 1);
+                (int, int) Upper = (Row - 1, Column);
+                (int, int) UpperRight = (Row - 1, Column + 1);
+                (int, int) Right = (Row, Column + 1);
+                (int, int) LowerRight = (Row + 1, Column + 1);
+                (int, int) Lower = (Row + 1, Column);
+                (int, int) LowerLeft = (Row + 1, Column - 1);
+                (int, int) Left = (Row, Column - 1);
+
                 if (Row == 0)
                 {
                     if (Column == 0)
                     {
                         //first row & first column
-                        vertices[Row, Column].NeighbourUpperLeft = null;
-                        vertices[Row, Column].NeighbourUpper = null;
-                        vertices[Row, Column].NeighbourUpperRight = null;
-                        vertices[Row, Column].NeighbourRight = vertices[Row, Column + 1];
-                        vertices[Row, Column].NeighbourLowerRight = vertices[Row + 1, Column + 1];
-                        vertices[Row, Column].NeighbourLower = vertices[Row + 1, Column];
-                        vertices[Row, Column].NeighbourLowerLeft = null;
-                        vertices[Row, Column].NeighbourLeft = null;
+                        //top left corner
+                        Vertices[Row, Column].NeighbourUpperLeft = null;
+                        Vertices[Row, Column].NeighbourUpper = null;
+                        Vertices[Row, Column].NeighbourUpperRight = null;
+                        Vertices[Row, Column].NeighbourRight = Vertices[Right.Item1, Right.Item2];
+                        Vertices[Row, Column].NeighbourLowerRight = Vertices[LowerRight.Item1, LowerRight.Item2];
+                        Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLowerLeft = null;
+                        Vertices[Row, Column].NeighbourLeft = null;
                     }
                     else if (Column == HeightMap.texture.width - 1)
                     {
                         //first row & last column
-                        vertices[Row, Column].NeighbourUpperLeft = null;
-                        vertices[Row, Column].NeighbourUpper = null;
-                        vertices[Row, Column].NeighbourUpperRight = null;
-                        vertices[Row, Column].NeighbourRight = null;
-                        vertices[Row, Column].NeighbourLowerRight = null;
-                        vertices[Row, Column].NeighbourLower = vertices[Row + 1, Column];
-                        vertices[Row, Column].NeighbourLowerLeft = vertices[Row + 1, Column - 1];
-                        vertices[Row, Column].NeighbourLeft = vertices[Row, Column - 1];
+                        //top right corner
+                        Vertices[Row, Column].NeighbourUpperLeft = null;
+                        Vertices[Row, Column].NeighbourUpper = null;
+                        Vertices[Row, Column].NeighbourUpperRight = null;
+                        Vertices[Row, Column].NeighbourRight = null;
+                        Vertices[Row, Column].NeighbourLowerRight = null;
+                        Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLowerLeft = Vertices[LowerLeft.Item1, LowerLeft.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
                     }
                     else
                     {
                         //first row
-                        vertices[Row, Column].NeighbourUpperLeft = null;
-                        vertices[Row, Column].NeighbourUpper = null;
-                        vertices[Row, Column].NeighbourUpperRight = null;
-                        vertices[Row, Column].NeighbourRight = vertices[Row, Column + 1];
-                        vertices[Row, Column].NeighbourLowerRight = vertices[Row + 1, Column + 1];
-                        vertices[Row, Column].NeighbourLower = vertices[Row + 1, Column];
-                        vertices[Row, Column].NeighbourLowerLeft = vertices[Row + 1, Column - 1];
-                        vertices[Row, Column].NeighbourLeft = vertices[Row, Column - 1];
+                        //max top
+                        Vertices[Row, Column].NeighbourUpperLeft = null;
+                        Vertices[Row, Column].NeighbourUpper = null;
+                        Vertices[Row, Column].NeighbourUpperRight = null;
+                        Vertices[Row, Column].NeighbourRight = Vertices[Right.Item1, Right.Item2];
+                        Vertices[Row, Column].NeighbourLowerRight = Vertices[LowerRight.Item1, LowerRight.Item2];
+                        Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLowerLeft = Vertices[LowerLeft.Item1, LowerLeft.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
                     }
                 }
                 else if (Row == HeightMap.texture.height - 1)
@@ -100,38 +112,41 @@ public class ThreeDErosionEventHandler : MonoBehaviour
                     if (Column == 0)
                     {
                         //last row & first column
-                        vertices[Row, Column].NeighbourUpperLeft = null;
-                        vertices[Row, Column].NeighbourUpper = vertices[Row - 1, Column];
-                        vertices[Row, Column].NeighbourUpperRight = vertices[Row + 1, Column + 1];
-                        vertices[Row, Column].NeighbourRight = vertices[Row, Column + 1];
-                        vertices[Row, Column].NeighbourLowerRight = null;
-                        vertices[Row, Column].NeighbourLower = null;
-                        vertices[Row, Column].NeighbourLowerLeft = null;
-                        vertices[Row, Column].NeighbourLeft = null;
+                        //bottom left corner
+                        Vertices[Row, Column].NeighbourUpperLeft = null;
+                        Vertices[Row, Column].NeighbourUpper = Vertices[Upper.Item1, Upper.Item2];
+                        Vertices[Row, Column].NeighbourUpperRight = Vertices[UpperRight.Item1, UpperRight.Item2];
+                        Vertices[Row, Column].NeighbourRight = Vertices[Right.Item1, Right.Item2];
+                        Vertices[Row, Column].NeighbourLowerRight = null;
+                        Vertices[Row, Column].NeighbourLower = null;
+                        Vertices[Row, Column].NeighbourLowerLeft = null;
+                        Vertices[Row, Column].NeighbourLeft = null;
                     }
                     else if (Column == HeightMap.texture.width - 1)
                     {
                         //last row & last column
-                        vertices[Row, Column].NeighbourUpperLeft = vertices[Row - 1, Column - 1];
-                        vertices[Row, Column].NeighbourUpper = vertices[Row - 1, Column];
-                        vertices[Row, Column].NeighbourUpperRight = null;
-                        vertices[Row, Column].NeighbourRight = null;
-                        vertices[Row, Column].NeighbourLowerRight = null;
-                        vertices[Row, Column].NeighbourLower = null;
-                        vertices[Row, Column].NeighbourLowerLeft = null;
-                        vertices[Row, Column].NeighbourLeft = vertices[Row, Column - 1];
+                        //bottom right corner
+                        Vertices[Row, Column].NeighbourUpperLeft = Vertices[UpperLeft.Item1, UpperLeft.Item2];
+                        Vertices[Row, Column].NeighbourUpper = Vertices[Upper.Item1, Upper.Item2];
+                        Vertices[Row, Column].NeighbourUpperRight = null;
+                        Vertices[Row, Column].NeighbourRight = null;
+                        Vertices[Row, Column].NeighbourLowerRight = null;
+                        Vertices[Row, Column].NeighbourLower = null;
+                        Vertices[Row, Column].NeighbourLowerLeft = null;
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
                     }
                     else
                     {
                         //last row
-                        vertices[Row, Column].NeighbourUpperLeft = vertices[Row - 1, Column - 1];
-                        vertices[Row, Column].NeighbourUpper = vertices[Row - 1, Column];
-                        vertices[Row, Column].NeighbourUpperRight = vertices[Row + 1, Column + 1];
-                        vertices[Row, Column].NeighbourRight = vertices[Row, Column + 1];
-                        vertices[Row, Column].NeighbourLowerRight = null;
-                        vertices[Row, Column].NeighbourLower = null;
-                        vertices[Row, Column].NeighbourLowerLeft = null;
-                        vertices[Row, Column].NeighbourLeft = vertices[Row, Column - 1];
+                        //max bottom
+                        Vertices[Row, Column].NeighbourUpperLeft = Vertices[UpperLeft.Item1, UpperLeft.Item2];
+                        Vertices[Row, Column].NeighbourUpper = Vertices[Upper.Item1, Upper.Item2];
+                        Vertices[Row, Column].NeighbourUpperRight = Vertices[UpperRight.Item1, UpperRight.Item2];
+                        Vertices[Row, Column].NeighbourRight = Vertices[Right.Item1, Right.Item2];
+                        Vertices[Row, Column].NeighbourLowerRight = null;
+                        Vertices[Row, Column].NeighbourLower = null;
+                        Vertices[Row, Column].NeighbourLowerLeft = null;
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
                     }
                 }
                 else
@@ -139,94 +154,58 @@ public class ThreeDErosionEventHandler : MonoBehaviour
                     if (Column == 0)
                     {
                         //first column
-                        vertices[Row, Column].NeighbourUpperLeft = null;
-                        vertices[Row, Column].NeighbourUpper = vertices[Row - 1, Column];
-                        vertices[Row, Column].NeighbourUpperRight = vertices[Row + 1, Column + 1];
-                        vertices[Row, Column].NeighbourRight = vertices[Row, Column + 1];
-                        vertices[Row, Column].NeighbourLowerRight = vertices[Row + 1, Column + 1];
-                        vertices[Row, Column].NeighbourLower = vertices[Row + 1, Column];
-                        vertices[Row, Column].NeighbourLowerLeft = null;
-                        vertices[Row, Column].NeighbourLeft = null;
+                        //max left
+                        Vertices[Row, Column].NeighbourUpperLeft = null;
+                        Vertices[Row, Column].NeighbourUpper = Vertices[Upper.Item1, Upper.Item2];
+                        Vertices[Row, Column].NeighbourUpperRight = Vertices[UpperRight.Item1, UpperRight.Item2];
+                        Vertices[Row, Column].NeighbourRight = Vertices[Right.Item1, Right.Item2];
+                        Vertices[Row, Column].NeighbourLowerRight = Vertices[LowerRight.Item1, LowerRight.Item2];
+                        Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLowerLeft = null;
+                        Vertices[Row, Column].NeighbourLeft = null;
                     }
                     else if (Column == HeightMap.texture.width - 1)
                     {
                         //last column
-                        vertices[Row, Column].NeighbourUpperLeft = vertices[Row - 1, Column - 1];
-                        vertices[Row, Column].NeighbourUpper = vertices[Row - 1, Column];
-                        vertices[Row, Column].NeighbourUpperRight = null;
-                        vertices[Row, Column].NeighbourRight = null;
-                        vertices[Row, Column].NeighbourLowerRight = null;
-                        vertices[Row, Column].NeighbourLower = vertices[Row + 1, Column];
-                        vertices[Row, Column].NeighbourLowerLeft = vertices[Row + 1, Column - 1];
-                        vertices[Row, Column].NeighbourLeft = vertices[Row, Column - 1];
+                        //max right
+                        Vertices[Row, Column].NeighbourUpperLeft = Vertices[UpperLeft.Item1, UpperLeft.Item2];
+                        Vertices[Row, Column].NeighbourUpper = Vertices[Upper.Item1, Upper.Item2];
+                        Vertices[Row, Column].NeighbourUpperRight = null;
+                        Vertices[Row, Column].NeighbourRight = null;
+                        Vertices[Row, Column].NeighbourLowerRight = null;
+                        Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLowerLeft = Vertices[LowerLeft.Item1, LowerLeft.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
                     }
                     else
                     {
                         //normal Vertex
-                        vertices[Row, Column].NeighbourUpperLeft = vertices[Row - 1, Column - 1];
-                        vertices[Row, Column].NeighbourUpper = vertices[Row - 1, Column];
-                        vertices[Row, Column].NeighbourUpperRight = vertices[Row + 1, Column + 1];
-                        vertices[Row, Column].NeighbourRight = vertices[Row, Column + 1];
-                        vertices[Row, Column].NeighbourLowerRight = vertices[Row + 1, Column + 1];
-                        vertices[Row, Column].NeighbourLower = vertices[Row + 1, Column];
-                        vertices[Row, Column].NeighbourLowerLeft = vertices[Row + 1, Column - 1];
-                        vertices[Row, Column].NeighbourLeft = vertices[Row, Column - 1];
+                        Vertices[Row, Column].NeighbourUpperLeft = Vertices[UpperLeft.Item1, UpperLeft.Item2];
+                        Vertices[Row, Column].NeighbourUpper = Vertices[Upper.Item1, Upper.Item2];
+                        Vertices[Row, Column].NeighbourUpperRight = Vertices[UpperRight.Item1, UpperRight.Item2];
+                        Vertices[Row, Column].NeighbourRight = Vertices[Right.Item1, Right.Item2];
+                        Vertices[Row, Column].NeighbourLowerRight = Vertices[LowerRight.Item1, LowerRight.Item2];
+                        Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLowerLeft = Vertices[LowerLeft.Item1, LowerLeft.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
                     }
                 }
             }
         }
     }
-    private void CreateQuadsAndLinkThemToTheVertices()
+
+    private void CreateQuadsAndLinkThemToTheVertices(Vertex[,] Vertices)
     {
-        for (int column = 0; column < HeightMap.texture.width; column++)
+        List<Quad> quads = new List<Quad>();
+        for (int Column = 0; Column < HeightMap.texture.width - 1; Column++)
         {
-            for (int row = 0; row < HeightMap.texture.height; row++)
+            for (int Row = 0; Row < HeightMap.texture.height - 1; Row++)
             {
-                if (row == 0)
-                {
-                    if (column == 0)
-                    {
-                        //first row & first column
-                    }
-                    else if (column == HeightMap.texture.width - 1)
-                    {
-                        //first row & last column
-                    }
-                    else
-                    {
-                        //first row
-                    }
-                }
-                else if (row == HeightMap.texture.height - 1)
-                {
-                    if (column == 0)
-                    {
-                        //last row & first column
-                    }
-                    else if (column == HeightMap.texture.width - 1)
-                    {
-                        //last row & last column
-                    }
-                    else
-                    {
-                        //last row
-                    }
-                }
-                else
-                {
-                    if (column == 0)
-                    {
-                        //first column
-                    }
-                    else if (column == HeightMap.texture.width - 1)
-                    {
-                        //last column
-                    }
-                    else
-                    {
-                        //normal Vertex
-                    }
-                }
+                quads.Add(new Quad(Vertices[Row, Column], Vertices[Row + 1, Column], Vertices[Row + 1, Column + 1], Vertices[Row, Column + 1]));
+                Vertices[Row, Column].QuadLowerRight = quads[quads.Count - 1];
+                Vertices[Row + 1, Column].QuadLowerLeft = quads[quads.Count - 1];
+                Vertices[Row + 1, Column + 1].QuadUpperLeft = quads[quads.Count - 1];
+                Vertices[Row, Column + 1].QuadUpperRight = quads[quads.Count - 1];
             }
         }
     }
