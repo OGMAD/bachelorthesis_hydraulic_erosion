@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class Quad
 {
+    public Material Grass;
+
     public Vertex TopLeftVertex;
     public Vertex TopRightVertex;
     public Vertex BottomLeftVertex;
@@ -9,11 +11,18 @@ public class Quad
 
     public Quad(Vertex TopLeft, Vertex TopReight, Vertex BottomRight, Vertex BottomLeft)
     {
+        GetMaterials();
         TopLeftVertex = TopLeft;
         TopRightVertex = TopReight;
         BottomLeftVertex = BottomLeft;
         BottomRightVertex = BottomRight;
         RenderQuad();
+        SelectMaterial();
+    }
+
+    private void GetMaterials()
+    {
+        Grass = Resources.Load<Material>("Materials/Grass");
     }
 
     public void RenderQuad()
@@ -44,5 +53,13 @@ public class Quad
         meshfilter.mesh = mesh;
         mesh.RecalculateBounds();
         mesh.RecalculateNormals();
+
+        Debug.Log(Grass.color.r + ", " + Grass.color.g + ", " + Grass.color.b);
+        quad.gameObject.GetComponent<Renderer>().material = Grass;
+    }
+
+    private void SelectMaterial()
+    {
+        
     }
 }

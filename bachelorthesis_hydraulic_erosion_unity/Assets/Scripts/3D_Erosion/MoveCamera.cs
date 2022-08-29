@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MoveCamera : MonoBehaviour
 {
-    [SerializeField] public float MovementSpeed = 0.1f;
+    [SerializeField] public float MovementSpeed = 1.0f;
     [SerializeField] private float TurnSpeed = 45.0f;
     [SerializeField] private float HorizontalInput;
     [SerializeField] private float ForwardInput;
@@ -20,6 +20,6 @@ public class MoveCamera : MonoBehaviour
         transform.position = transform.position + Vector3.forward * ForwardInput * MovementSpeed;
         transform.position = transform.position + Vector3.right * HorizontalInput * MovementSpeed;
         transform.position = transform.position + Vector3.up * FlightInput * MovementSpeed;
-        transform.Rotate(Vector3.up, RotationalInput * TurnSpeed * Time.deltaTime);
+        transform.Rotate(new Vector3(0,0), RotationalInput * TurnSpeed * Time.deltaTime);
     }
 }
