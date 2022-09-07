@@ -4,11 +4,6 @@ using UnityEngine;
 
 public class Vertex
 {
-    public Quad QuadUpperLeft;
-    public Quad QuadUpperRight;
-    public Quad QuadLowerRight;
-    public Quad QuadLowerLeft;
-
     public Vertex NeighbourUpperLeft;
     public Vertex NeighbourUpper;
     public Vertex NeighbourUpperRight;
@@ -26,7 +21,6 @@ public class Vertex
         set
         {
             _yCoord = value;
-            //RenderQuads();
         }
     }
     public int ZCoord { get; set; }
@@ -36,13 +30,5 @@ public class Vertex
         XCoord = xWidth;
         ZCoord = zDepth;
         YCoord = yHeight;
-    }
-
-    private void RenderQuads()
-    {
-        QuadUpperLeft.RenderQuad();
-        QuadUpperRight.RenderQuad();
-        QuadLowerRight.RenderQuad();
-        QuadLowerLeft.RenderQuad();
     }
 }

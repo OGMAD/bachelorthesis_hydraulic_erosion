@@ -35,7 +35,7 @@ public class ThreeDErosionEventHandler : MonoBehaviour
 
         vertices = CreateVertices(vertices);
         FindNeighbours(vertices);
-        CreateQuadsAndLinkThemToTheVertices(vertices);
+        MeshGeneration.CreateLandscape(vertices);
     }
 
     private Vertex[,] CreateVertices(Vertex[,] vertices)
@@ -190,22 +190,6 @@ public class ThreeDErosionEventHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
                     }
                 }
-            }
-        }
-    }
-
-    private void CreateQuadsAndLinkThemToTheVertices(Vertex[,] Vertices)
-    {
-        List<Quad> quads = new List<Quad>();
-        for (int Column = 0; Column < HeightMap.texture.width - 1; Column++)
-        {
-            for (int Row = 0; Row < HeightMap.texture.height - 1; Row++)
-            {
-                quads.Add(new Quad(Vertices[Row, Column], Vertices[Row + 1, Column], Vertices[Row + 1, Column + 1], Vertices[Row, Column + 1]));
-                Vertices[Row, Column].QuadLowerRight = quads[quads.Count - 1];
-                Vertices[Row + 1, Column].QuadLowerLeft = quads[quads.Count - 1];
-                Vertices[Row + 1, Column + 1].QuadUpperLeft = quads[quads.Count - 1];
-                Vertices[Row, Column + 1].QuadUpperRight = quads[quads.Count - 1];
             }
         }
     }
