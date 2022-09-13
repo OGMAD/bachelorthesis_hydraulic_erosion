@@ -5,8 +5,8 @@ public static class MeshGeneration
     public static void CreateLandscape(Vertex[,] vertices)
     {
         GameObject quad = new GameObject("Plane");
-        MeshFilter meshfilter = quad.AddComponent(typeof(MeshFilter)) as MeshFilter;
-        MeshRenderer meshrenderer = quad.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
+        MeshFilter meshFilter = quad.AddComponent(typeof(MeshFilter)) as MeshFilter;
+        MeshRenderer meshRenderer = quad.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
 
         Mesh mesh = new Mesh();
 
@@ -14,7 +14,7 @@ public static class MeshGeneration
         CalculateAndAddUVToMesh(vertices, mesh);
         CalculateTriangles(vertices, mesh);
 
-        meshfilter.mesh = mesh;
+        meshFilter.mesh = mesh;
         mesh.RecalculateBounds();
         mesh.RecalculateNormals();
     }
@@ -61,22 +61,21 @@ public static class MeshGeneration
     }
     private static void CalculateTriangles(Vertex[,] vertices, Mesh mesh) 
     {
-        int[] tris = new int[((vertices.GetUpperBound(0) * vertices.GetUpperBound(1)) - vertices.GetUpperBound(1)) * 3 ];
+        int[] tris = new int[((vertices.GetUpperBound(0) * vertices.GetUpperBound(1)) - vertices.GetUpperBound(1)) * 6 ];
         int[] singletris = new int[3];
         int counter = 0;
         for(int i = 0; i < mesh.vertices.Length - vertices.GetUpperBound(1); i++)
         {
-            if (i % vertices.GetUpperBound(1) != 0)
-            {
-                if (i % 2 == 0)
+            if ((i % vertices.GetUpperBound(1) != 0) && (i % (i + vertices.GetUpperBound(1)) != 0))
+            { 
+                singletris = RightSiteTriangle(i, vertices.GetUpperBound(1));
+                for (int j = 0; j < singletris.Length; j++)
                 {
-                    singletris = RightSiteTriangle(i, vertices.GetUpperBound(1));
+                    tris[counter] = singletris[j];
+                    counter++;
                 }
-                else
-                {
-                    singletris = LeftSiteTriangle(i, vertices.GetUpperBound(1));
-                }
-
+                
+                singletris = LeftSiteTriangle(i, vertices.GetUpperBound(1));
                 for (int j = 0; j < singletris.Length; j++)
                 {
                     tris[counter] = singletris[j];
@@ -90,11 +89,13 @@ public static class MeshGeneration
 
     private static int[] RightSiteTriangle(int i, int offset)
     {
-        return new[] { i, i + 1, i + offset };
+        //Debug.Log("RightSiteTriangle: (" + i + "/ " +  (i + offset) + "/ " +  (i + 1) + ")");
+        return new[] { i, i + offset, i + 1 };
     }
 
     private static int[] LeftSiteTriangle(int i, int offset)
     {
-        return new[] { i, i + offset, i + offset - 1 };
+        //Debug.Log("LeftSiteTriangle: (" + i + "/ " + (i + offset - 1) + "/ " + (i + offset) + ")");
+        return new[] { i, i + offset - 1, i + offset };
     }
 }
