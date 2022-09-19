@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class MoveCamera : MonoBehaviour
 {
-    [SerializeField] public float MovementSpeed = 1.0f;
+    [SerializeField] public float MovementSpeed = 0.2f;
     [SerializeField] private float TurnSpeed = 45.0f;
     [SerializeField] private float HorizontalInput;
     [SerializeField] private float ForwardInput;

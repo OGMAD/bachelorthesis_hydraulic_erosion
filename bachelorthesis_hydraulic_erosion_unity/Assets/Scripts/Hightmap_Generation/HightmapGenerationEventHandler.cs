@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using UnityEditor;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class HightmapGenerationEventHandler : MonoBehaviour
 {
@@ -185,6 +187,7 @@ public class HightmapGenerationEventHandler : MonoBehaviour
         Texture2D textureA = SpriteA.texture;
         Texture2D textureB = SpriteB.texture;
         Texture2D textureC = new Texture2D(Xwidth, Yheight);
+        
         for (int x = 0; x< textureA.width; x++)
         {
             for(int y = 0; y< textureA.height;y++)
@@ -192,10 +195,7 @@ public class HightmapGenerationEventHandler : MonoBehaviour
                 Color color = (textureA.GetPixel(x, y) * textureB.GetPixel(x, y));
                 textureC.SetPixel(x, y, color);
             }
-            Progress += ((float)x / (float)textureA.width) / (float)CloudmapItem_List.Count;
-            ProgressBar.value = Progress;
         }
-        ProgressBar.value = Progress;
         textureC.Apply();
         return Sprite.Create(textureC, new Rect(0, 0, textureC.width, textureC.height), Vector2.zero);
     }

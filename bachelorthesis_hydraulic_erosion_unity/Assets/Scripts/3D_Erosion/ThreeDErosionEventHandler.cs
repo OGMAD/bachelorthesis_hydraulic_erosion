@@ -1,19 +1,22 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading;
+using System.Threading.Tasks;
 
 public class ThreeDErosionEventHandler : MonoBehaviour
 {
     private Sprite HeightMap;
     private static int HighestPoint;
     private static int LowestPoint;
+    private Vertex[,] vertices;
 
     // Start is called before the first frame update
     void Start()
     {
         GetAndSetVariables();
         TransferHightmapToObjects();
-        //MeshGenerationHelper.CreatePlane();
+        MeshGeneration.CreateLandscape(vertices);
     }
 
     // Update is called once per frame
@@ -31,11 +34,10 @@ public class ThreeDErosionEventHandler : MonoBehaviour
 
     private void TransferHightmapToObjects()
     {
-        Vertex[,] vertices = new Vertex[HeightMap.texture.height, HeightMap.texture.width];
+        vertices = new Vertex[HeightMap.texture.height, HeightMap.texture.width];
 
         vertices = CreateVertices(vertices);
         FindNeighbours(vertices);
-        MeshGeneration.CreateLandscape(vertices);
     }
 
     private Vertex[,] CreateVertices(Vertex[,] vertices)
@@ -52,9 +54,11 @@ public class ThreeDErosionEventHandler : MonoBehaviour
 
     private void FindNeighbours(Vertex[,] Vertices)
     {
-        for (int Column = 0; Column < HeightMap.texture.width; Column++)
+        int width = HeightMap.texture.width;
+        int height = HeightMap.texture.height;
+        Parallel.For(0, width, Column =>
         {
-            for (int Row = 0; Row < HeightMap.texture.height; Row++)
+            Parallel.For(0, height, Row =>
             {
                 (int, int) UpperLeft = (Row - 1, Column - 1);
                 (int, int) Upper = (Row - 1, Column);
@@ -80,7 +84,7 @@ public class ThreeDErosionEventHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLowerLeft = null;
                         Vertices[Row, Column].NeighbourLeft = null;
                     }
-                    else if (Column == HeightMap.texture.width - 1)
+                    else if (Column == width - 1)
                     {
                         //first row & last column
                         //top right corner
@@ -107,7 +111,7 @@ public class ThreeDErosionEventHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
                     }
                 }
-                else if (Row == HeightMap.texture.height - 1)
+                else if (Row == height - 1)
                 {
                     if (Column == 0)
                     {
@@ -122,7 +126,7 @@ public class ThreeDErosionEventHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLowerLeft = null;
                         Vertices[Row, Column].NeighbourLeft = null;
                     }
-                    else if (Column == HeightMap.texture.width - 1)
+                    else if (Column == width - 1)
                     {
                         //last row & last column
                         //bottom right corner
@@ -164,7 +168,7 @@ public class ThreeDErosionEventHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLowerLeft = null;
                         Vertices[Row, Column].NeighbourLeft = null;
                     }
-                    else if (Column == HeightMap.texture.width - 1)
+                    else if (Column == width - 1)
                     {
                         //last column
                         //max right
@@ -190,8 +194,9 @@ public class ThreeDErosionEventHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
                     }
                 }
-            }
-        }
+            });
+        });
+        
     }
 
     private int CalculateHeight(float Height)
