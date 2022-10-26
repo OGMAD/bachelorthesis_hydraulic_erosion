@@ -250,6 +250,7 @@ public class HeightmapUniformationEventHandler : MonoBehaviour
         StateNameController.HeightMapSpriteUniformated = TargetSpriteXY;
         StateNameController.HighestPoint = int.Parse(HighestPointMString);
         StateNameController.LowestPoint = int.Parse(LowestPointMString);
-        SceneManager.LoadScene("3D_Erosion");
+        //SceneManager.LoadScene("3D_Erosion");
+        SceneManager.LoadScene("displacement_map_test");
     }
 }
