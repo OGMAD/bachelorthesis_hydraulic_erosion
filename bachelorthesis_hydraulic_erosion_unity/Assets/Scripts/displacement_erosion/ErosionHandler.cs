@@ -100,6 +100,8 @@ public class ErosionHandler : MonoBehaviour
                 {
                     if (LastVertex != null)
                     {
+                        EmbedErosionInLandscape(LastVertex, CurrentVertex);
+
                         float Delta = LastVertex.YCoord - CurrentVertex.YCoord;
                         LastVertex.YCoord -= (Delta / 2) * ErosionStrength;
                         CurrentVertex.YCoord += (Delta / 2) * ErosionStrength;
@@ -115,6 +117,72 @@ public class ErosionHandler : MonoBehaviour
         DisplacementMaterial.SetTexture("_ParallaxMap", newHeightMap);
         DisplacementMaterial.mainTexture = newHeightMap;
         #endregion
+    }
+
+    private void EmbedErosionInLandscape(Vertex LastVertex, Vertex CurrentVertex)
+    {
+        (Vertex, Vertex) LeftAndRightNeighbour = GetLeftAndRightNeighbourBasedOnDirections(LastVertex, CurrentVertex);
+        Vertex LeftNeighbour = LeftAndRightNeighbour.Item1;
+        Vertex RightNeighbour = LeftAndRightNeighbour.Item2;
+
+        if(LeftNeighbour != null && RightNeighbour != null)
+        {
+            #region Calculate Left
+            float VLC = LastVertex.YCoord;
+            float VL = LeftNeighbour.YCoord;
+
+            LeftNeighbour.YCoord += (VLC - VL) * (1.0f / 3.0f);
+            float CenterChangeLeft = (VLC - VL) * (2.0f / 3.0f);
+            #endregion
+
+            #region Calculate Right
+            float VRC = LastVertex.YCoord;
+            float VR = RightNeighbour.YCoord;
+
+            LeftNeighbour.YCoord += (VRC - VR) * (1.0f / 3.0f);
+            float CenterChangeRight = (VRC - VR) * (2.0f / 3.0f);
+            #endregion
+
+            #region Set Center
+            LastVertex.YCoord += (CenterChangeLeft + CenterChangeRight);
+            #endregion
+        }
+    }
+
+    private (Vertex, Vertex) GetLeftAndRightNeighbourBasedOnDirections(Vertex LastVertex, Vertex CurrentVertex)
+    {
+        if (CurrentVertex == LastVertex.NeighbourLeft)
+        {
+            return (LastVertex.NeighbourUpper, LastVertex.NeighbourLower);
+        }
+        else if (CurrentVertex == LastVertex.NeighbourUpperLeft)
+        {
+            return (LastVertex.NeighbourUpperRight, LastVertex.NeighbourLowerLeft);
+        }
+        else if (CurrentVertex == LastVertex.NeighbourUpper)
+        {
+            return (LastVertex.NeighbourRight, LastVertex.NeighbourLeft);
+        }
+        else if (CurrentVertex == LastVertex.NeighbourUpperRight)
+        {
+            return (LastVertex.NeighbourLowerRight, LastVertex.NeighbourUpperLeft);
+        }
+        else if (CurrentVertex == LastVertex.NeighbourRight)
+        {
+            return (LastVertex.NeighbourLower, LastVertex.NeighbourUpper);
+        }
+        else if (CurrentVertex == LastVertex.NeighbourLowerRight)
+        {
+            return (LastVertex.NeighbourLowerLeft, LastVertex.NeighbourUpperRight);
+        }
+        else if (CurrentVertex == LastVertex.NeighbourLower)
+        {
+            return (LastVertex.NeighbourLeft, LastVertex.NeighbourRight);
+        }
+        else
+        {
+            return (LastVertex.NeighbourUpperLeft, LastVertex.NeighbourLowerRight);
+        }
     }
 
     private Texture2D GenerateTexture()
