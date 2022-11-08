@@ -239,8 +239,8 @@ public class CloudmapItem
     public CloudmapItem(Image image)
     {
         Name = "SomeHightmap";
-        Xwidth = 255;
-        Yheight = 255;
+        Xwidth = 1000;
+        Yheight = 1000;
         OffsetX = 0;
         OffsetY = 0;
         Strength = 1;

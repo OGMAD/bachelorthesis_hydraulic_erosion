@@ -15,7 +15,10 @@ public class ErosionHandler : MonoBehaviour
     private static int LowestPoint;
     private Vertex[,] Vertices;
     private List<Vertex>[] Paths;
-    public float ErosionStrength = 0.25f;
+
+    private int Threadcount = 16;
+    public bool ShouldEmbedErosionInLandscape = false;
+    public float MaximalDropCapacity = 0.0001f;
 
     // Start is called before the first frame update
     void Start()
@@ -53,71 +56,126 @@ public class ErosionHandler : MonoBehaviour
             Debug.Log("Iterations == null");
         }
         #endregion
-        #region calculate Paths
-        Paths = new List<Vertex>[Iterations];
 
+        
+        int IterationsPerRun = Threadcount;
+        int Runiterations = Iterations / IterationsPerRun;
+
+        Paths = new List<Vertex>[IterationsPerRun];
         Parallel.For(0, Paths.Length, i =>
         {
             Paths[i] = new List<Vertex>();
         });
-
         System.Random rnd = new System.Random();
 
-        Parallel.For(0, Iterations, i => 
+        for (int RI = 0; RI < Runiterations; RI++)
         {
-            #region get random Vertex as Start Point
-            //spot to enter wind direction
-            System.Random rndX = new System.Random();
-            int StartVertexX = rndX.Next(0, Vertices.GetLength(0) - 1);
+            #region calculate Paths
+            Parallel.For(0, IterationsPerRun, i =>
+            {
+                #region get random Vertex as Start Point
+                //spot to enter wind direction
+                System.Random rndX = new System.Random();
+                int StartVertexX = rndX.Next(0, Vertices.GetLength(0) - 1);
 
-            System.Random rndY = new System.Random();
-            int StartVertexY = rndY.Next(0, Vertices.GetLength(1) - 1);
+                System.Random rndY = new System.Random();
+                int StartVertexY = rndY.Next(0, Vertices.GetLength(1) - 1);
+                #endregion
+
+                Vertex CurrentVertex = Vertices[StartVertexX, StartVertexY];
+
+                CalculatePath(i, (CurrentVertex, rnd.Next(0, 7)), 0);
+            });
             #endregion
 
-            Vertex CurrentVertex = Vertices[StartVertexX, StartVertexY];
-
-            CalculatePath(i, (CurrentVertex, rnd.Next(0, 7)), 0);
-        });
-        #endregion
-
-        #region Debug
-        /*for(int i = 0; i< Paths.Length; i++)
-        {
-            for(int j = 0; j < Paths[i].Count; j++)
+            #region Debug
+            /*for(int i = 0; i< Paths.Length; i++)
             {
-                Debug.Log("Path: " + i + " Position: " + j + " Coordinates: (" + Paths[i][j].XCoord + "/" + Paths[i][j].ZCoord + "/" + Paths[i][j].YCoord + ")");
-            }
-        }*/
-        #endregion
-
-        #region Erode
-        foreach(List<Vertex>Path in Paths)
-        {
-            Vertex LastVertex = null;
-            for (int i = 0; i < (int)(10.0f * ErosionStrength); i++)
-            {
-                foreach (Vertex CurrentVertex in Path)
+                for(int j = 0; j < Paths[i].Count; j++)
                 {
+                    Debug.Log("Path: " + i + " Position: " + j + " Coordinates: (" + Paths[i][j].XCoord + "/" + Paths[i][j].ZCoord + "/" + Paths[i][j].YCoord + ")");
+                }
+            }*/
+            #endregion
+            #region Erode
+            Parallel.For(0, Paths.Length, Path => 
+            {
+                Vertex LastVertex = null;
+                for (int Vertex = 0; Vertex < Paths[Path].Count; Vertex++)
+                {
+                    Vertex CurrentVertex = Paths[Path][Vertex];
                     if (LastVertex != null)
                     {
-                        EmbedErosionInLandscape(LastVertex, CurrentVertex);
+                        if (ShouldEmbedErosionInLandscape)
+                        {
+                            EmbedErosionInLandscape(LastVertex, CurrentVertex);
+                        }
 
                         float Delta = LastVertex.YCoord - CurrentVertex.YCoord;
-                        LastVertex.YCoord -= (Delta / 2) * ErosionStrength;
-                        CurrentVertex.YCoord += (Delta / 2) * ErosionStrength;
+                        if(Delta > 0.0f)
+                        {
+                            float TransferredMaterial = (Delta/2.0f) * CalculateStrengthAtVertexInPath(Delta);
+
+                            if(TransferredMaterial > MaximalDropCapacity)
+                            {
+                                TransferredMaterial = MaximalDropCapacity;
+                            }
+                            LastVertex.YCoord -= TransferredMaterial;
+                            CurrentVertex.YCoord += TransferredMaterial;
+                        }
                     }
 
                     LastVertex = CurrentVertex;
                 }
-            }
+            });
+            #endregion
         }
-        #endregion
         #region Display
         Texture2D newHeightMap = GenerateTexture();
         DisplacementMaterial.SetTexture("_ParallaxMap", newHeightMap);
         DisplacementMaterial.mainTexture = newHeightMap;
         #endregion
     }
+
+    private float CalculateStrengthAtVertexInPath(float Delta)
+    {
+        if(Delta < 1.0f)
+        {
+            return Delta;
+        }
+        else
+        {
+            return 1.0f;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     private void EmbedErosionInLandscape(Vertex LastVertex, Vertex CurrentVertex)
     {
@@ -247,7 +305,7 @@ public class ErosionHandler : MonoBehaviour
             )
         {
             (Vertex, int) NextVertex = CurrentVertexAndDirection.Item1.ClaculateNextVertex(CurrentVertexAndDirection.Item2);
-            if (CurrentVertexAndDirection.Item1.YCoord >= NextVertex.Item1.YCoord && depth < 100)
+            if (CurrentVertexAndDirection.Item1.YCoord > NextVertex.Item1.YCoord)
             {
                 CalculatePath(PathIndex, NextVertex, (depth + 1));
             }
