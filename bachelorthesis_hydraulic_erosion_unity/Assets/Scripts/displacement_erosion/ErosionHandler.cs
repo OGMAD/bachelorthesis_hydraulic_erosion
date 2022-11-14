@@ -14,11 +14,12 @@ public class ErosionHandler : MonoBehaviour
     private static int HighestPoint;
     private static int LowestPoint;
     private Vertex[,] Vertices;
+    private bool[,] PathTraces;
     private List<Vertex>[] Paths;
 
     private int Threadcount = 16;
     public bool ShouldEmbedErosionInLandscape = false;
-    public float MaximalDropCapacity = 0.0001f;
+    public float MaximalDropCapacity = 0.001f;
 
     // Start is called before the first frame update
     void Start()
@@ -30,8 +31,8 @@ public class ErosionHandler : MonoBehaviour
             DisplacementMaterial.SetTexture("_ParallaxMap", StateNameController.HeightMapSpriteUniformated.texture);
             #endregion
 
-            float PlaneSizeX = (float)StateNameController.HeightMapSpriteUniformated.texture.width / 1000.0f;
-            float PlaneSizeZ = (float)StateNameController.HeightMapSpriteUniformated.texture.height / 1000.0f;
+            float PlaneSizeX = (float)StateNameController.HeightMapSpriteUniformated.texture.width / 10000.0f;
+            float PlaneSizeZ = (float)StateNameController.HeightMapSpriteUniformated.texture.height / 10000.0f;
 
             Plane.transform.localScale = new Vector3(PlaneSizeX, 1.0f, PlaneSizeZ);
 
@@ -41,7 +42,7 @@ public class ErosionHandler : MonoBehaviour
         {
             Debug.Log("Scene Test Mode");
         }
-        
+
     }
 
     public void Simulate()
@@ -57,52 +58,37 @@ public class ErosionHandler : MonoBehaviour
         }
         #endregion
 
-        
+        #region Variabledeclerations
         int IterationsPerRun = Threadcount;
         int Runiterations = Iterations / IterationsPerRun;
 
+        System.Random rnd = new System.Random();
         Paths = new List<Vertex>[IterationsPerRun];
+        #endregion
+
         Parallel.For(0, Paths.Length, i =>
         {
             Paths[i] = new List<Vertex>();
         });
-        System.Random rnd = new System.Random();
 
         for (int RI = 0; RI < Runiterations; RI++)
         {
             #region calculate Paths
             Parallel.For(0, IterationsPerRun, i =>
             {
-                #region get random Vertex as Start Point
-                //spot to enter wind direction
-                System.Random rndX = new System.Random();
-                int StartVertexX = rndX.Next(0, Vertices.GetLength(0) - 1);
-
-                System.Random rndY = new System.Random();
-                int StartVertexY = rndY.Next(0, Vertices.GetLength(1) - 1);
-                #endregion
-
-                Vertex CurrentVertex = Vertices[StartVertexX, StartVertexY];
-
+                //Debug.Log(rnd.Next(0, Vertices.GetLength(0) - 1) + " - " + rnd.Next(0, Vertices.GetLength(1) - 1));
+                Vertex CurrentVertex = Vertices[rnd.Next(0, Vertices.GetLength(0) - 1), rnd.Next(0, Vertices.GetLength(1) - 1)];
                 CalculatePath(i, (CurrentVertex, rnd.Next(0, 7)), 0);
             });
             #endregion
-
-            #region Debug
-            /*for(int i = 0; i< Paths.Length; i++)
-            {
-                for(int j = 0; j < Paths[i].Count; j++)
-                {
-                    Debug.Log("Path: " + i + " Position: " + j + " Coordinates: (" + Paths[i][j].XCoord + "/" + Paths[i][j].ZCoord + "/" + Paths[i][j].YCoord + ")");
-                }
-            }*/
-            #endregion
             #region Erode
-            Parallel.For(0, Paths.Length, Path => 
+            Parallel.For(0, Paths.Length, Path =>
             {
+                //Debug.Log("Outer " + Path);
                 Vertex LastVertex = null;
                 for (int Vertex = 0; Vertex < Paths[Path].Count; Vertex++)
                 {
+                    //Debug.Log("Inner " + Path + " " + Vertex);
                     Vertex CurrentVertex = Paths[Path][Vertex];
                     if (LastVertex != null)
                     {
@@ -110,21 +96,19 @@ public class ErosionHandler : MonoBehaviour
                         {
                             EmbedErosionInLandscape(LastVertex, CurrentVertex);
                         }
-
+                        /*
                         float Delta = LastVertex.YCoord - CurrentVertex.YCoord;
-                        if(Delta > 0.0f)
+                        float TransferredMaterial = (Delta / 4.0f);
+
+                        if (TransferredMaterial > MaximalDropCapacity)
                         {
-                            float TransferredMaterial = (Delta/2.0f) * CalculateStrengthAtVertexInPath(Delta);
-
-                            if(TransferredMaterial > MaximalDropCapacity)
-                            {
-                                TransferredMaterial = MaximalDropCapacity;
-                            }
-                            LastVertex.YCoord -= TransferredMaterial;
-                            CurrentVertex.YCoord += TransferredMaterial;
+                            TransferredMaterial = MaximalDropCapacity;
                         }
+                        //Debug.Log(TransferredMaterial);
+                        LastVertex.YCoord -= TransferredMaterial;
+                        CurrentVertex.YCoord += TransferredMaterial;
+                        */
                     }
-
                     LastVertex = CurrentVertex;
                 }
             });
@@ -132,50 +116,12 @@ public class ErosionHandler : MonoBehaviour
         }
         #region Display
         Texture2D newHeightMap = GenerateTexture();
+        Texture2D PathMap = GeneratePathTexture();
+
         DisplacementMaterial.SetTexture("_ParallaxMap", newHeightMap);
-        DisplacementMaterial.mainTexture = newHeightMap;
+        DisplacementMaterial.mainTexture = PathMap;
         #endregion
     }
-
-    private float CalculateStrengthAtVertexInPath(float Delta)
-    {
-        if(Delta < 1.0f)
-        {
-            return Delta;
-        }
-        else
-        {
-            return 1.0f;
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
     private void EmbedErosionInLandscape(Vertex LastVertex, Vertex CurrentVertex)
     {
@@ -183,7 +129,7 @@ public class ErosionHandler : MonoBehaviour
         Vertex LeftNeighbour = LeftAndRightNeighbour.Item1;
         Vertex RightNeighbour = LeftAndRightNeighbour.Item2;
 
-        if(LeftNeighbour != null && RightNeighbour != null)
+        if (LeftNeighbour != null && RightNeighbour != null)
         {
             #region Calculate Left
             float VLC = LastVertex.YCoord;
@@ -247,21 +193,36 @@ public class ErosionHandler : MonoBehaviour
     {
         Texture2D HeightMap = new Texture2D(Vertices.GetLength(0), Vertices.GetLength(1));
 
-        for(int x = 0; x < Vertices.GetLength(0); x++)
+        for (int x = 0; x < Vertices.GetLength(0); x++)
         {
             for (int y = 0; y < Vertices.GetLength(1); y++)
             {
-                float c = CalculateHeight(Vertices[x,y].YCoord, false);
-                #region Debug
-                /*if (x == Vertices.GetLength(1) / 2)
-                {
-                    if (y < 100)
-                    {
-                        Debug.Log(c);
-                    }
-                }*/
-                #endregion
+                float c = CalculateHeight(Vertices[x, y].YCoord, false);
                 HeightMap.SetPixel(x, y, new Color(c, c, c));
+            }
+        }
+        HeightMap.Apply();
+        return HeightMap;
+    }
+
+    private Texture2D GeneratePathTexture()
+    {
+        Texture2D HeightMap = new Texture2D(Vertices.GetLength(0), Vertices.GetLength(1));
+
+        for (int x = 0; x < Vertices.GetLength(0); x++)
+        {
+            for (int y = 0; y < Vertices.GetLength(1); y++)
+            {
+                float r;
+                if (PathTraces[x,y] == true)
+                {
+                    r = 1.0f;
+                }
+                else
+                {
+                    r = 0.0f;
+                }
+                HeightMap.SetPixel(x, y, new Color(r, 0, 0));
             }
         }
         HeightMap.Apply();
@@ -270,27 +231,8 @@ public class ErosionHandler : MonoBehaviour
 
     private void CalculatePath(int PathIndex, (Vertex, int) CurrentVertexAndDirection, int depth)
     {
-        #region Neighbour Debug Area
-        /*
-                Vertex v = CurrentVertex;
-                Debug.Log
-                    (
-                    "("+ PathIndex + "/" + depth + "Koord: "+ "(" + v.XCoord +"-"+ v.YCoord+")" + "): " 
-                    + v.NeighbourLeft.YCoord + " - " 
-                    + v.NeighbourUpperLeft.YCoord + " - " 
-                    + v.NeighbourUpper.YCoord + " - " 
-                    + v.NeighbourUpperRight.YCoord + " - " 
-                    + v.NeighbourRight.YCoord + " - " 
-                    + v.NeighbourLowerRight.YCoord + " - " 
-                    + v.NeighbourLower.YCoord + " - " 
-                    + v.NeighbourLowerLeft.YCoord
-                    );
-        */
-        #endregion
-
-        //Debug.Log("height: " + CurrentVertex.YCoord + "pixel color: " + CalculateHeight(CurrentVertex.YCoord, false));
-
         Paths[PathIndex].Add(CurrentVertexAndDirection.Item1);
+        PathTraces[CurrentVertexAndDirection.Item1.XCoord, CurrentVertexAndDirection.Item1.ZCoord] = true;
 
         if
             (
@@ -305,13 +247,12 @@ public class ErosionHandler : MonoBehaviour
             )
         {
             (Vertex, int) NextVertex = CurrentVertexAndDirection.Item1.ClaculateNextVertex(CurrentVertexAndDirection.Item2);
-            if (CurrentVertexAndDirection.Item1.YCoord > NextVertex.Item1.YCoord)
+            if (CurrentVertexAndDirection.Item1.YCoord >= NextVertex.Item1.YCoord && depth < 50)
             {
                 CalculatePath(PathIndex, NextVertex, (depth + 1));
             }
         }
     }
-
     public void Save()
     {
         Debug.Log("Save!!!");
@@ -334,9 +275,10 @@ public class ErosionHandler : MonoBehaviour
     private void TransferHightmapToObjects()
     {
         Vertices = new Vertex[HeightMap.texture.height, HeightMap.texture.width];
+        PathTraces = new bool[HeightMap.texture.height, HeightMap.texture.width];
 
         Vertices = CreateVertices(Vertices);
-        FindNeighbours(Vertices);
+        FindNeighbours(Vertices, HeightMap);
     }
 
     private Vertex[,] CreateVertices(Vertex[,] vertices)
@@ -345,13 +287,14 @@ public class ErosionHandler : MonoBehaviour
         {
             for (int row = 0; row < HeightMap.texture.height; row++)
             {
-                vertices[row, column] = new Vertex(column, row, CalculateHeight(HeightMap.texture.GetPixel(row, column).r,true));
+                vertices[row, column] = new Vertex(column, row, CalculateHeight(HeightMap.texture.GetPixel(row, column).r, true));
+                PathTraces[row, column] = false;
             }
         }
         return vertices;
     }
 
-    private void FindNeighbours(Vertex[,] Vertices)
+    public void FindNeighbours(Vertex[,] Vertices, Sprite HeightMap)
     {
         int width = HeightMap.texture.width;
         int height = HeightMap.texture.height;
@@ -526,14 +469,14 @@ public class ErosionHandler : MonoBehaviour
         int delta = HighestPoint - LowestPoint;
         if (ToObject)
         {
-            
+
             return (float)Height * (float)delta;
         }
         else
         {
             return (float)Height / (float)delta;
         }
-        
+
     }
     #endregion
 }
