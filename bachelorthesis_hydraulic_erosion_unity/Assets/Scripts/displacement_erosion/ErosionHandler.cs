@@ -11,14 +11,14 @@ public class ErosionHandler : MonoBehaviour
     private int Iterations = 0;
 
     private Sprite HeightMap;
-    private static int HighestPoint;
-    private static int LowestPoint;
+    public float HighestPoint;
+    public float LowestPoint;
     private Vertex[,] Vertices;
-    private bool[,] PathTraces;
+    private float[,] PathTraces;
     private List<Vertex>[] Paths;
 
     private int Threadcount = 16;
-    public bool ShouldEmbedErosionInLandscape = false;
+    public bool ShouldEmbedErosionInLandscape = true;
     public float MaximalDropCapacity = 0.001f;
 
     // Start is called before the first frame update
@@ -116,79 +116,187 @@ public class ErosionHandler : MonoBehaviour
         }
         #region Display
         Texture2D newHeightMap = GenerateTexture();
-        Texture2D PathMap = GeneratePathTexture();
+        Texture2D PathMap = GeneratePathTexture(newHeightMap);
 
         DisplacementMaterial.SetTexture("_ParallaxMap", newHeightMap);
         DisplacementMaterial.mainTexture = PathMap;
         #endregion
     }
 
-    private void EmbedErosionInLandscape(Vertex LastVertex, Vertex CurrentVertex)
+    public void EmbedErosionInLandscape(Vertex LastVertex, Vertex CurrentVertex)
     {
-        (Vertex, Vertex) LeftAndRightNeighbour = GetLeftAndRightNeighbourBasedOnDirections(LastVertex, CurrentVertex);
-        Vertex LeftNeighbour = LeftAndRightNeighbour.Item1;
-        Vertex RightNeighbour = LeftAndRightNeighbour.Item2;
-
-        if (LeftNeighbour != null && RightNeighbour != null)
+        if (ReturnFalseIfSomeNeighbourIsNull(CurrentVertex))
         {
-            #region Calculate Left
-            float VLC = LastVertex.YCoord;
-            float VL = LeftNeighbour.YCoord;
+            (Vertex, Vertex) LeftAndRightNeighbour = GetLeftAndRightNeighbourBasedOnDirections(LastVertex, CurrentVertex);
 
-            LeftNeighbour.YCoord += (VLC - VL) * (1.0f / 3.0f);
-            float CenterChangeLeft = (VLC - VL) * (2.0f / 3.0f);
-            #endregion
+            Vertex LeftNeighbour = LeftAndRightNeighbour.Item1;
+            PathTraces[LeftNeighbour.XCoord, LeftNeighbour.ZCoord] = 0.75f;
+            Vertex LeftNeighbourPlusOne;
+            Vertex LeftNeighbourPlusTwo;
 
-            #region Calculate Right
-            float VRC = LastVertex.YCoord;
-            float VR = RightNeighbour.YCoord;
+            Vertex RightNeighbour = LeftAndRightNeighbour.Item2;
+            PathTraces[RightNeighbour.XCoord, RightNeighbour.ZCoord] = 0.75f;
+            Vertex RightNeighbourPlusOne;
+            Vertex RightNeighbourPlusTwo;
 
-            LeftNeighbour.YCoord += (VRC - VR) * (1.0f / 3.0f);
-            float CenterChangeRight = (VRC - VR) * (2.0f / 3.0f);
-            #endregion
+            if (ReturnFalseIfSomeNeighbourIsNull(LeftNeighbour))
+            {
+                LeftNeighbourPlusOne = GetNextVertexBasedOnDirection(CurrentVertex, LeftNeighbour);
+                PathTraces[LeftNeighbourPlusOne.XCoord, LeftNeighbourPlusOne.ZCoord] = 0.5f;
 
-            #region Set Center
-            LastVertex.YCoord += (CenterChangeLeft + CenterChangeRight);
-            #endregion
+                if (ReturnFalseIfSomeNeighbourIsNull(LeftNeighbourPlusOne))
+                {
+                    LeftNeighbourPlusTwo = GetNextVertexBasedOnDirection(LeftNeighbour, LeftNeighbourPlusOne);
+                    PathTraces[LeftNeighbourPlusTwo.XCoord, LeftNeighbourPlusTwo.ZCoord] = 0.25f;
+                }
+            }
+
+            if (ReturnFalseIfSomeNeighbourIsNull(RightNeighbour))
+            {
+                RightNeighbourPlusOne = GetNextVertexBasedOnDirection(CurrentVertex, RightNeighbour);
+                PathTraces[RightNeighbourPlusOne.XCoord, RightNeighbourPlusOne.ZCoord] = 0.5f;
+
+                if (ReturnFalseIfSomeNeighbourIsNull(RightNeighbourPlusOne))
+                {
+                    RightNeighbourPlusTwo = GetNextVertexBasedOnDirection(RightNeighbour, RightNeighbourPlusOne);
+                    PathTraces[RightNeighbourPlusTwo.XCoord, RightNeighbourPlusTwo.ZCoord] = 0.25f;
+                }
+            }
+                
+
+            
         }
+
+        //if (LeftNeighbour != null && RightNeighbour != null)
+        //{
+        //    #region Calculate Left
+        //    float VLC = LastVertex.YCoord;
+        //    float VL = LeftNeighbour.YCoord;
+
+        //    LeftNeighbour.YCoord += (VLC - VL) * (1.0f / 3.0f);
+        //    float CenterChangeLeft = (VLC - VL) * (2.0f / 3.0f);
+        //    #endregion
+
+        //    #region Calculate Right
+        //    float VRC = LastVertex.YCoord;
+        //    float VR = RightNeighbour.YCoord;
+
+        //    LeftNeighbour.YCoord += (VRC - VR) * (1.0f / 3.0f);
+        //    float CenterChangeRight = (VRC - VR) * (2.0f / 3.0f);
+        //    #endregion
+
+        //    #region Set Center
+        //    LastVertex.YCoord += (CenterChangeLeft + CenterChangeRight);
+        //    #endregion
+        //}
     }
 
-    private (Vertex, Vertex) GetLeftAndRightNeighbourBasedOnDirections(Vertex LastVertex, Vertex CurrentVertex)
+    public (Vertex, Vertex) GetLeftAndRightNeighbourBasedOnDirections(Vertex LastVertex, Vertex CurrentVertex)
     {
         if (CurrentVertex == LastVertex.NeighbourLeft)
         {
-            return (LastVertex.NeighbourUpper, LastVertex.NeighbourLower);
+            return (CurrentVertex.NeighbourLower, CurrentVertex.NeighbourUpper);
         }
         else if (CurrentVertex == LastVertex.NeighbourUpperLeft)
         {
-            return (LastVertex.NeighbourUpperRight, LastVertex.NeighbourLowerLeft);
+            return (CurrentVertex.NeighbourLowerLeft, CurrentVertex.NeighbourUpperRight);
         }
         else if (CurrentVertex == LastVertex.NeighbourUpper)
         {
-            return (LastVertex.NeighbourRight, LastVertex.NeighbourLeft);
+            return (CurrentVertex.NeighbourLeft, CurrentVertex.NeighbourRight);
         }
         else if (CurrentVertex == LastVertex.NeighbourUpperRight)
         {
-            return (LastVertex.NeighbourLowerRight, LastVertex.NeighbourUpperLeft);
+            return (CurrentVertex.NeighbourUpperLeft, CurrentVertex.NeighbourLowerRight);
         }
         else if (CurrentVertex == LastVertex.NeighbourRight)
         {
-            return (LastVertex.NeighbourLower, LastVertex.NeighbourUpper);
+            return (CurrentVertex.NeighbourUpper, CurrentVertex.NeighbourLower);
         }
         else if (CurrentVertex == LastVertex.NeighbourLowerRight)
         {
-            return (LastVertex.NeighbourLowerLeft, LastVertex.NeighbourUpperRight);
+            return (CurrentVertex.NeighbourUpperRight, CurrentVertex.NeighbourLowerLeft);
         }
         else if (CurrentVertex == LastVertex.NeighbourLower)
         {
-            return (LastVertex.NeighbourLeft, LastVertex.NeighbourRight);
+            return (CurrentVertex.NeighbourRight, CurrentVertex.NeighbourLeft);
         }
         else
         {
-            return (LastVertex.NeighbourUpperLeft, LastVertex.NeighbourLowerRight);
+            return (CurrentVertex.NeighbourLowerRight, CurrentVertex.NeighbourUpperLeft);
         }
     }
-
+    public Vertex GetNextVertexBasedOnDirection(Vertex LastVertex, Vertex CurrentVertex)
+    {
+        if (CurrentVertex == LastVertex.NeighbourLeft)
+        {
+            return CurrentVertex.NeighbourLeft;
+        }
+        else if (CurrentVertex == LastVertex.NeighbourUpperLeft)
+        {
+            return CurrentVertex.NeighbourUpperLeft;
+        }
+        else if (CurrentVertex == LastVertex.NeighbourUpper)
+        {
+            return CurrentVertex.NeighbourUpper;
+        }
+        else if (CurrentVertex == LastVertex.NeighbourUpperRight)
+        {
+            return CurrentVertex.NeighbourUpperRight;
+        }
+        else if (CurrentVertex == LastVertex.NeighbourRight)
+        {
+            return CurrentVertex.NeighbourRight;
+        }
+        else if (CurrentVertex == LastVertex.NeighbourLowerRight)
+        {
+            return CurrentVertex.NeighbourLowerRight;
+        }
+        else if (CurrentVertex == LastVertex.NeighbourLower)
+        {
+            return CurrentVertex.NeighbourLower;
+        }
+        else
+        {
+            return CurrentVertex.NeighbourLowerLeft;
+        }
+    }
+    public bool ReturnFalseIfSomeNeighbourIsNull(Vertex vertex)
+    {
+        if (vertex.NeighbourLeft == null)
+        {
+            return false;
+        }else if (vertex.NeighbourUpperLeft == null)
+        {
+            return false;
+        }
+        else if (vertex.NeighbourUpper == null)
+        {
+            return false;
+        }
+        else if (vertex.NeighbourUpperRight == null)
+        {
+            return false;
+        }
+        else if (vertex.NeighbourRight == null)
+        {
+            return false;
+        }
+        else if (vertex.NeighbourLowerRight == null) {
+            return false;
+        }
+        else if (vertex.NeighbourLower == null)
+        {
+            return false;
+        }
+        else if(vertex.NeighbourLowerLeft == null)
+        {
+            return false;
+        }
+        else{
+            return true;
+        }
+    }
     private Texture2D GenerateTexture()
     {
         Texture2D HeightMap = new Texture2D(Vertices.GetLength(0), Vertices.GetLength(1));
@@ -205,34 +313,35 @@ public class ErosionHandler : MonoBehaviour
         return HeightMap;
     }
 
-    private Texture2D GeneratePathTexture()
+    private Texture2D GeneratePathTexture(Texture2D HeightMap)
     {
-        Texture2D HeightMap = new Texture2D(Vertices.GetLength(0), Vertices.GetLength(1));
+        Texture2D HeightMapWithPaths = new Texture2D(Vertices.GetLength(0), Vertices.GetLength(1));
 
         for (int x = 0; x < Vertices.GetLength(0); x++)
         {
             for (int y = 0; y < Vertices.GetLength(1); y++)
             {
                 float r;
-                if (PathTraces[x,y] == true)
+                if (PathTraces[x,y] != 0.0f)
                 {
-                    r = 1.0f;
+                    r = 1.0f* PathTraces[x, y];
+                    HeightMapWithPaths.SetPixel(x, y, new Color(r, 0, 0));
                 }
                 else
                 {
-                    r = 0.0f;
+                    HeightMapWithPaths.SetPixel(x, y, HeightMap.GetPixel(x, y));
                 }
-                HeightMap.SetPixel(x, y, new Color(r, 0, 0));
+                
             }
         }
-        HeightMap.Apply();
-        return HeightMap;
+        HeightMapWithPaths.Apply();
+        return HeightMapWithPaths;
     }
 
-    private void CalculatePath(int PathIndex, (Vertex, int) CurrentVertexAndDirection, int depth)
+    public void CalculatePath(int PathIndex, (Vertex, int) CurrentVertexAndDirection, int depth)
     {
         Paths[PathIndex].Add(CurrentVertexAndDirection.Item1);
-        PathTraces[CurrentVertexAndDirection.Item1.XCoord, CurrentVertexAndDirection.Item1.ZCoord] = true;
+        PathTraces[CurrentVertexAndDirection.Item1.XCoord, CurrentVertexAndDirection.Item1.ZCoord] = 1.0f;
 
         if
             (
@@ -247,7 +356,7 @@ public class ErosionHandler : MonoBehaviour
             )
         {
             (Vertex, int) NextVertex = CurrentVertexAndDirection.Item1.ClaculateNextVertex(CurrentVertexAndDirection.Item2);
-            if (CurrentVertexAndDirection.Item1.YCoord >= NextVertex.Item1.YCoord && depth < 50)
+            if (CurrentVertexAndDirection.Item1.YCoord >= NextVertex.Item1.YCoord)
             {
                 CalculatePath(PathIndex, NextVertex, (depth + 1));
             }
@@ -275,7 +384,7 @@ public class ErosionHandler : MonoBehaviour
     private void TransferHightmapToObjects()
     {
         Vertices = new Vertex[HeightMap.texture.height, HeightMap.texture.width];
-        PathTraces = new bool[HeightMap.texture.height, HeightMap.texture.width];
+        PathTraces = new float[HeightMap.texture.height, HeightMap.texture.width];
 
         Vertices = CreateVertices(Vertices);
         FindNeighbours(Vertices, HeightMap);
@@ -288,7 +397,7 @@ public class ErosionHandler : MonoBehaviour
             for (int row = 0; row < HeightMap.texture.height; row++)
             {
                 vertices[row, column] = new Vertex(column, row, CalculateHeight(HeightMap.texture.GetPixel(row, column).r, true));
-                PathTraces[row, column] = false;
+                PathTraces[row, column] = 0.0f;
             }
         }
         return vertices;
@@ -337,7 +446,7 @@ public class ErosionHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLowerRight = null;
                         Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
                         Vertices[Row, Column].NeighbourLowerLeft = Vertices[LowerLeft.Item1, LowerLeft.Item2];
-                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Left.Item2];
                     }
                     else
                     {
@@ -350,7 +459,7 @@ public class ErosionHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLowerRight = Vertices[LowerRight.Item1, LowerRight.Item2];
                         Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
                         Vertices[Row, Column].NeighbourLowerLeft = Vertices[LowerLeft.Item1, LowerLeft.Item2];
-                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Left.Item2];
                     }
                 }
                 else if (Row == height - 1)
@@ -379,7 +488,7 @@ public class ErosionHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLowerRight = null;
                         Vertices[Row, Column].NeighbourLower = null;
                         Vertices[Row, Column].NeighbourLowerLeft = null;
-                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Left.Item2];
                     }
                     else
                     {
@@ -392,7 +501,7 @@ public class ErosionHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLowerRight = null;
                         Vertices[Row, Column].NeighbourLower = null;
                         Vertices[Row, Column].NeighbourLowerLeft = null;
-                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Left.Item2];
                     }
                 }
                 else
@@ -421,7 +530,7 @@ public class ErosionHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLowerRight = null;
                         Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
                         Vertices[Row, Column].NeighbourLowerLeft = Vertices[LowerLeft.Item1, LowerLeft.Item2];
-                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Left.Item2];
                     }
                     else
                     {
@@ -433,7 +542,7 @@ public class ErosionHandler : MonoBehaviour
                         Vertices[Row, Column].NeighbourLowerRight = Vertices[LowerRight.Item1, LowerRight.Item2];
                         Vertices[Row, Column].NeighbourLower = Vertices[Lower.Item1, Lower.Item2];
                         Vertices[Row, Column].NeighbourLowerLeft = Vertices[LowerLeft.Item1, LowerLeft.Item2];
-                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Lower.Item2];
+                        Vertices[Row, Column].NeighbourLeft = Vertices[Left.Item1, Left.Item2];
                     }
                 }
             });
@@ -464,9 +573,9 @@ public class ErosionHandler : MonoBehaviour
         #endregion
     }
 
-    private float CalculateHeight(float Height, bool ToObject)
+    public float CalculateHeight(float Height, bool ToObject)
     {
-        int delta = HighestPoint - LowestPoint;
+        float delta = HighestPoint - LowestPoint;
         if (ToObject)
         {
 

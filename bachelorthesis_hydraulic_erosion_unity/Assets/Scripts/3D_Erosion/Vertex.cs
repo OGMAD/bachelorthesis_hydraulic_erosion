@@ -82,35 +82,35 @@ public class Vertex
         #region check if there is an lowest neighbour in direction
         if (Direction == 0 && NeighbourLeft.YCoord == LowestNeighbour)
         {
-            return (NeighbourLeft, 4);
+            return (NeighbourRight, Direction);
         }
         else if (Direction == 1 && NeighbourUpperLeft.YCoord == LowestNeighbour)
         {
-            return (NeighbourUpperLeft, 5);
+            return (NeighbourLowerRight, Direction);
         }
         else if (Direction == 2 && NeighbourUpper.YCoord == LowestNeighbour)
         {
-            return (NeighbourUpper, 6);
+            return (NeighbourLower, Direction);
         }
         else if (Direction == 3 && NeighbourUpperRight.YCoord == LowestNeighbour)
         {
-            return (NeighbourUpperRight, 7);
+            return (NeighbourLowerLeft, Direction);
         }
         else if (Direction == 4 && NeighbourRight.YCoord == LowestNeighbour)
         {
-            return (NeighbourRight, 0);
+            return (NeighbourLeft, Direction);
         }
         else if (Direction == 5 && NeighbourLowerRight.YCoord == LowestNeighbour)
         {
-            return (NeighbourLowerRight, 1);
+            return (NeighbourUpperLeft, Direction);
         }
         else if (Direction == 6 && NeighbourLower.YCoord == LowestNeighbour)
         {
-            return (NeighbourLower, 2);
+            return (NeighbourUpper, Direction);
         }
         else if (Direction == 7 && NeighbourLowerLeft.YCoord == LowestNeighbour)
         {
-            return (NeighbourLowerLeft, 3);
+            return (NeighbourUpperRight, Direction);
         }
         #endregion
         #region if not give to lowest with new direction
