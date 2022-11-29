@@ -20,6 +20,8 @@ public class ErosionHandler : MonoBehaviour
     private int Threadcount = 16;
     public bool ShouldEmbedErosionInLandscape = true;
     public float MaximalDropCapacity = 0.001f;
+    PathCalculations PathCalculations;
+    Embet Embet;
 
     // Start is called before the first frame update
     void Start()
@@ -37,6 +39,9 @@ public class ErosionHandler : MonoBehaviour
             Plane.transform.localScale = new Vector3(PlaneSizeX, 1.0f, PlaneSizeZ);
 
             Objectify();
+
+            PathCalculations = new();
+            Embet = new(PathTraces);
         }
         catch
         {
@@ -62,7 +67,6 @@ public class ErosionHandler : MonoBehaviour
         int IterationsPerRun = Threadcount;
         int Runiterations = Iterations / IterationsPerRun;
 
-        System.Random rnd = new System.Random();
         Paths = new List<Vertex>[IterationsPerRun];
         #endregion
 
@@ -70,49 +74,14 @@ public class ErosionHandler : MonoBehaviour
         {
             Paths[i] = new List<Vertex>();
         });
+        PathCalculations.Paths = Paths;
+        PathCalculations.PathTraces = PathTraces;
 
         for (int RI = 0; RI < Runiterations; RI++)
         {
-            #region calculate Paths
-            Parallel.For(0, IterationsPerRun, i =>
-            {
-                //Debug.Log(rnd.Next(0, Vertices.GetLength(0) - 1) + " - " + rnd.Next(0, Vertices.GetLength(1) - 1));
-                Vertex CurrentVertex = Vertices[rnd.Next(0, Vertices.GetLength(0) - 1), rnd.Next(0, Vertices.GetLength(1) - 1)];
-                CalculatePath(i, (CurrentVertex, rnd.Next(0, 7)), 0);
-            });
-            #endregion
-            #region Erode
-            Parallel.For(0, Paths.Length, Path =>
-            {
-                //Debug.Log("Outer " + Path);
-                Vertex LastVertex = null;
-                for (int Vertex = 0; Vertex < Paths[Path].Count; Vertex++)
-                {
-                    //Debug.Log("Inner " + Path + " " + Vertex);
-                    Vertex CurrentVertex = Paths[Path][Vertex];
-                    if (LastVertex != null)
-                    {
-                        if (ShouldEmbedErosionInLandscape)
-                        {
-                            EmbedErosionInLandscape(LastVertex, CurrentVertex);
-                        }
-                        /*
-                        float Delta = LastVertex.YCoord - CurrentVertex.YCoord;
-                        float TransferredMaterial = (Delta / 4.0f);
+            CalculatePaths(IterationsPerRun);
 
-                        if (TransferredMaterial > MaximalDropCapacity)
-                        {
-                            TransferredMaterial = MaximalDropCapacity;
-                        }
-                        //Debug.Log(TransferredMaterial);
-                        LastVertex.YCoord -= TransferredMaterial;
-                        CurrentVertex.YCoord += TransferredMaterial;
-                        */
-                    }
-                    LastVertex = CurrentVertex;
-                }
-            });
-            #endregion
+            Erode();
         }
         #region Display
         Texture2D newHeightMap = GenerateTexture();
@@ -123,179 +92,54 @@ public class ErosionHandler : MonoBehaviour
         #endregion
     }
 
-    public void EmbedErosionInLandscape(Vertex LastVertex, Vertex CurrentVertex)
+    private void CalculatePaths(int IterationsPerRun)
     {
-        if (ReturnFalseIfSomeNeighbourIsNull(CurrentVertex))
+        System.Random rnd = new System.Random();
+
+        Parallel.For(0, IterationsPerRun, i =>
         {
-            (Vertex, Vertex) LeftAndRightNeighbour = GetLeftAndRightNeighbourBasedOnDirections(LastVertex, CurrentVertex);
+            //Debug.Log(rnd.Next(0, Vertices.GetLength(0) - 1) + " - " + rnd.Next(0, Vertices.GetLength(1) - 1));
+            Vertex CurrentVertex = Vertices[rnd.Next(0, Vertices.GetLength(0) - 1), rnd.Next(0, Vertices.GetLength(1) - 1)];
+            PathCalculations.CalculatePath(i, (CurrentVertex, rnd.Next(0, 7)), 0);
+        });
+        Paths = PathCalculations.Paths;
+        PathTraces = PathCalculations.PathTraces;
+    }
 
-            Vertex LeftNeighbour = LeftAndRightNeighbour.Item1;
-            PathTraces[LeftNeighbour.XCoord, LeftNeighbour.ZCoord] = 0.75f;
-            Vertex LeftNeighbourPlusOne;
-            Vertex LeftNeighbourPlusTwo;
-
-            Vertex RightNeighbour = LeftAndRightNeighbour.Item2;
-            PathTraces[RightNeighbour.XCoord, RightNeighbour.ZCoord] = 0.75f;
-            Vertex RightNeighbourPlusOne;
-            Vertex RightNeighbourPlusTwo;
-
-            if (ReturnFalseIfSomeNeighbourIsNull(LeftNeighbour))
+    private void Erode()
+    {
+        #region Erode
+        Parallel.For(0, Paths.Length, Path =>
+        {
+            //Debug.Log("Outer " + Path);
+            Vertex LastVertex = null;
+            for (int Vertex = 0; Vertex < Paths[Path].Count; Vertex++)
             {
-                LeftNeighbourPlusOne = GetNextVertexBasedOnDirection(CurrentVertex, LeftNeighbour);
-                PathTraces[LeftNeighbourPlusOne.XCoord, LeftNeighbourPlusOne.ZCoord] = 0.5f;
-
-                if (ReturnFalseIfSomeNeighbourIsNull(LeftNeighbourPlusOne))
+                //Debug.Log("Inner " + Path + " " + Vertex);
+                Vertex CurrentVertex = Paths[Path][Vertex];
+                if (LastVertex != null)
                 {
-                    LeftNeighbourPlusTwo = GetNextVertexBasedOnDirection(LeftNeighbour, LeftNeighbourPlusOne);
-                    PathTraces[LeftNeighbourPlusTwo.XCoord, LeftNeighbourPlusTwo.ZCoord] = 0.25f;
+                    if (ShouldEmbedErosionInLandscape)
+                    {
+                        Embet.EmbedErosionInLandscape(LastVertex, CurrentVertex);
+                    }
+                    /*
+                    float Delta = LastVertex.YCoord - CurrentVertex.YCoord;
+                    float TransferredMaterial = (Delta / 4.0f);
+
+                    if (TransferredMaterial > MaximalDropCapacity)
+                    {
+                        TransferredMaterial = MaximalDropCapacity;
+                    }
+                    //Debug.Log(TransferredMaterial);
+                    LastVertex.YCoord -= TransferredMaterial;
+                    CurrentVertex.YCoord += TransferredMaterial;
+                    */
                 }
+                LastVertex = CurrentVertex;
             }
-
-            if (ReturnFalseIfSomeNeighbourIsNull(RightNeighbour))
-            {
-                RightNeighbourPlusOne = GetNextVertexBasedOnDirection(CurrentVertex, RightNeighbour);
-                PathTraces[RightNeighbourPlusOne.XCoord, RightNeighbourPlusOne.ZCoord] = 0.5f;
-
-                if (ReturnFalseIfSomeNeighbourIsNull(RightNeighbourPlusOne))
-                {
-                    RightNeighbourPlusTwo = GetNextVertexBasedOnDirection(RightNeighbour, RightNeighbourPlusOne);
-                    PathTraces[RightNeighbourPlusTwo.XCoord, RightNeighbourPlusTwo.ZCoord] = 0.25f;
-                }
-            }
-                
-
-            
-        }
-
-        //if (LeftNeighbour != null && RightNeighbour != null)
-        //{
-        //    #region Calculate Left
-        //    float VLC = LastVertex.YCoord;
-        //    float VL = LeftNeighbour.YCoord;
-
-        //    LeftNeighbour.YCoord += (VLC - VL) * (1.0f / 3.0f);
-        //    float CenterChangeLeft = (VLC - VL) * (2.0f / 3.0f);
-        //    #endregion
-
-        //    #region Calculate Right
-        //    float VRC = LastVertex.YCoord;
-        //    float VR = RightNeighbour.YCoord;
-
-        //    LeftNeighbour.YCoord += (VRC - VR) * (1.0f / 3.0f);
-        //    float CenterChangeRight = (VRC - VR) * (2.0f / 3.0f);
-        //    #endregion
-
-        //    #region Set Center
-        //    LastVertex.YCoord += (CenterChangeLeft + CenterChangeRight);
-        //    #endregion
-        //}
-    }
-
-    public (Vertex, Vertex) GetLeftAndRightNeighbourBasedOnDirections(Vertex LastVertex, Vertex CurrentVertex)
-    {
-        if (CurrentVertex == LastVertex.NeighbourLeft)
-        {
-            return (CurrentVertex.NeighbourLower, CurrentVertex.NeighbourUpper);
-        }
-        else if (CurrentVertex == LastVertex.NeighbourUpperLeft)
-        {
-            return (CurrentVertex.NeighbourLowerLeft, CurrentVertex.NeighbourUpperRight);
-        }
-        else if (CurrentVertex == LastVertex.NeighbourUpper)
-        {
-            return (CurrentVertex.NeighbourLeft, CurrentVertex.NeighbourRight);
-        }
-        else if (CurrentVertex == LastVertex.NeighbourUpperRight)
-        {
-            return (CurrentVertex.NeighbourUpperLeft, CurrentVertex.NeighbourLowerRight);
-        }
-        else if (CurrentVertex == LastVertex.NeighbourRight)
-        {
-            return (CurrentVertex.NeighbourUpper, CurrentVertex.NeighbourLower);
-        }
-        else if (CurrentVertex == LastVertex.NeighbourLowerRight)
-        {
-            return (CurrentVertex.NeighbourUpperRight, CurrentVertex.NeighbourLowerLeft);
-        }
-        else if (CurrentVertex == LastVertex.NeighbourLower)
-        {
-            return (CurrentVertex.NeighbourRight, CurrentVertex.NeighbourLeft);
-        }
-        else
-        {
-            return (CurrentVertex.NeighbourLowerRight, CurrentVertex.NeighbourUpperLeft);
-        }
-    }
-    public Vertex GetNextVertexBasedOnDirection(Vertex LastVertex, Vertex CurrentVertex)
-    {
-        if (CurrentVertex == LastVertex.NeighbourLeft)
-        {
-            return CurrentVertex.NeighbourLeft;
-        }
-        else if (CurrentVertex == LastVertex.NeighbourUpperLeft)
-        {
-            return CurrentVertex.NeighbourUpperLeft;
-        }
-        else if (CurrentVertex == LastVertex.NeighbourUpper)
-        {
-            return CurrentVertex.NeighbourUpper;
-        }
-        else if (CurrentVertex == LastVertex.NeighbourUpperRight)
-        {
-            return CurrentVertex.NeighbourUpperRight;
-        }
-        else if (CurrentVertex == LastVertex.NeighbourRight)
-        {
-            return CurrentVertex.NeighbourRight;
-        }
-        else if (CurrentVertex == LastVertex.NeighbourLowerRight)
-        {
-            return CurrentVertex.NeighbourLowerRight;
-        }
-        else if (CurrentVertex == LastVertex.NeighbourLower)
-        {
-            return CurrentVertex.NeighbourLower;
-        }
-        else
-        {
-            return CurrentVertex.NeighbourLowerLeft;
-        }
-    }
-    public bool ReturnFalseIfSomeNeighbourIsNull(Vertex vertex)
-    {
-        if (vertex.NeighbourLeft == null)
-        {
-            return false;
-        }else if (vertex.NeighbourUpperLeft == null)
-        {
-            return false;
-        }
-        else if (vertex.NeighbourUpper == null)
-        {
-            return false;
-        }
-        else if (vertex.NeighbourUpperRight == null)
-        {
-            return false;
-        }
-        else if (vertex.NeighbourRight == null)
-        {
-            return false;
-        }
-        else if (vertex.NeighbourLowerRight == null) {
-            return false;
-        }
-        else if (vertex.NeighbourLower == null)
-        {
-            return false;
-        }
-        else if(vertex.NeighbourLowerLeft == null)
-        {
-            return false;
-        }
-        else{
-            return true;
-        }
+        });
+        #endregion
     }
     private Texture2D GenerateTexture()
     {
@@ -322,45 +166,28 @@ public class ErosionHandler : MonoBehaviour
             for (int y = 0; y < Vertices.GetLength(1); y++)
             {
                 float r;
+                float g;
                 if (PathTraces[x,y] != 0.0f)
                 {
-                    r = 1.0f* PathTraces[x, y];
-                    HeightMapWithPaths.SetPixel(x, y, new Color(r, 0, 0));
+                    if((PathTraces[x, y] == 10.0f))
+                    {
+                        g = 1.0f;
+                        HeightMapWithPaths.SetPixel(x, y, new Color(0, g, 0));
+                    }
+                    else
+                    {
+                        r = 1.0f * PathTraces[x, y];
+                        HeightMapWithPaths.SetPixel(x, y, new Color(r, 0, 0));
+                    }
                 }
                 else
                 {
                     HeightMapWithPaths.SetPixel(x, y, HeightMap.GetPixel(x, y));
                 }
-                
             }
         }
         HeightMapWithPaths.Apply();
         return HeightMapWithPaths;
-    }
-
-    public void CalculatePath(int PathIndex, (Vertex, int) CurrentVertexAndDirection, int depth)
-    {
-        Paths[PathIndex].Add(CurrentVertexAndDirection.Item1);
-        PathTraces[CurrentVertexAndDirection.Item1.XCoord, CurrentVertexAndDirection.Item1.ZCoord] = 1.0f;
-
-        if
-            (
-            CurrentVertexAndDirection.Item1.NeighbourLeft != null &&
-            CurrentVertexAndDirection.Item1.NeighbourUpperLeft != null &&
-            CurrentVertexAndDirection.Item1.NeighbourUpper != null &&
-            CurrentVertexAndDirection.Item1.NeighbourUpperRight != null &&
-            CurrentVertexAndDirection.Item1.NeighbourRight != null &&
-            CurrentVertexAndDirection.Item1.NeighbourLowerRight != null &&
-            CurrentVertexAndDirection.Item1.NeighbourLower != null &&
-            CurrentVertexAndDirection.Item1.NeighbourLowerLeft != null
-            )
-        {
-            (Vertex, int) NextVertex = CurrentVertexAndDirection.Item1.ClaculateNextVertex(CurrentVertexAndDirection.Item2);
-            if (CurrentVertexAndDirection.Item1.YCoord >= NextVertex.Item1.YCoord)
-            {
-                CalculatePath(PathIndex, NextVertex, (depth + 1));
-            }
-        }
     }
     public void Save()
     {
@@ -388,6 +215,7 @@ public class ErosionHandler : MonoBehaviour
 
         Vertices = CreateVertices(Vertices);
         FindNeighbours(Vertices, HeightMap);
+        DisplacementMaterial.mainTexture = GeneratePathTexture(HeightMap.texture);
     }
 
     private Vertex[,] CreateVertices(Vertex[,] vertices)
@@ -547,30 +375,6 @@ public class ErosionHandler : MonoBehaviour
                 }
             });
         });
-
-        #region Neighbour Debug Area
-        /*
-         for (int x = 0; x < Vertices.GetLength(0); x++)
-        {
-            for (int y = 0; y < Vertices.GetLength(1); y++)
-            {
-                Vertex v = Vertices[x, y];
-                Debug.Log
-                    (
-                    "("+x+"/"+y+"): " 
-                    + v.NeighbourLeft + " - " 
-                    + v.NeighbourUpperLeft + " - " 
-                    + v.NeighbourUpper + " - " 
-                    + v.NeighbourUpperRight + " - " 
-                    + v.NeighbourRight + " - " 
-                    + v.NeighbourLowerRight + " - " 
-                    + v.NeighbourLower + " - " 
-                    + v.NeighbourLowerLeft
-                    );
-            }
-        }
-         */
-        #endregion
     }
 
     public float CalculateHeight(float Height, bool ToObject)
@@ -579,11 +383,11 @@ public class ErosionHandler : MonoBehaviour
         if (ToObject)
         {
 
-            return (float)Height * (float)delta;
+            return ((float)Height * (float)delta);
         }
         else
         {
-            return (float)Height / (float)delta;
+            return ((float)Height / (float)delta);
         }
 
     }

@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 2560
     height: 1349
   m_ShowMode: 4
-  m_Title: Test Runner
+  m_Title: Game
   m_RootView: {fileID: 8}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 200}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 22
+  controlID: 20
 --- !u!114 &4
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -99,7 +99,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 200}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 21
+  controlID: 19
 --- !u!114 &5
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -274,7 +274,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 200}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 114
+  controlID: 126
 --- !u!114 &12
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -299,7 +299,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 115
+  controlID: 127
 --- !u!114 &13
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -356,7 +356,7 @@ MonoBehaviour:
     m_LastAppliedPresetName: Default
     m_SaveData: []
   m_Spl:
-    ID: 135
+    ID: 149
     splitterInitialOffset: 226
     currentActiveSplitter: -1
     realSizes:
@@ -423,7 +423,7 @@ MonoBehaviour:
       name: bachelorthesis_hydraulic_erosion_unity
       fullName: bachelorthesis_hydraulic_erosion_unity
       resultStatus: 1
-      duration: 0.0845711
+      duration: 0.0916957
       messages: 
       output: 
       stacktrace: 
@@ -439,7 +439,7 @@ MonoBehaviour:
       name: Assembly-CSharp-Editor.dll
       fullName: D:/Bachelorarbeit/Unity_Projekt/bachelorthesis_hydraulic_erosion/bachelorthesis_hydraulic_erosion_unity/Library/ScriptAssemblies/Assembly-CSharp-Editor.dll
       resultStatus: 1
-      duration: 0.046394
+      duration: 0.0523764
       messages: 
       output: 
       stacktrace: 
@@ -455,7 +455,7 @@ MonoBehaviour:
       name: TestErosionHandler
       fullName: TestErosionHandler
       resultStatus: 1
-      duration: 0.0444313
+      duration: 0.0494768
       messages: 
       output: 'You are trying to create a MonoBehaviour using the ''new'' keyword. 
         This is not allowed.  MonoBehaviours can only be added using AddComponent().
@@ -577,35 +577,34 @@ MonoBehaviour:
 
         2 Passed
 
-        3
-        Passed
+        3 Passed
 
-        4 Passed
+        4
+        Passed
 
         5 Passed
 
         6 Passed
 
-        7
-        Passed
+        7 Passed
 
         8 Passed
 
-        9 Passed
+        9
+        Passed
 
         10 Passed
 
-        11
-        Passed
+        11 Passed
 
         12 Passed
 
-        13 Passed
+        13
+        Passed
 
         14 Passed
 
-        15
-        Passed
+        15 Passed
 
 '
       stacktrace: 
@@ -622,7 +621,7 @@ MonoBehaviour:
       name: GetLeftAndRightNeighbourBasedOnDirections_Succsess
       fullName: TestErosionHandler.GetLeftAndRightNeighbourBasedOnDirections_Succsess
       resultStatus: 1
-      duration: 0.0248355
+      duration: 0.0289671
       messages: 
       output: 'You are trying to create a MonoBehaviour using the ''new'' keyword. 
         This is not allowed.  MonoBehaviours can only be added using AddComponent().
@@ -639,7 +638,29 @@ MonoBehaviour:
       - Uncategorized
       parentId: 1001
       parentUniqueId: Assembly-CSharp-Editor.dll/[Assembly-CSharp-Editor][TestErosionHandler][suite]
-    m_ResultText: 'GetLeftAndRightNeighbourBasedOnDirections_Succsess (0,025s)
+    - id: 1008
+      uniqueId: Assembly-CSharp-Editor.dll/TestErosionHandler/[Assembly-CSharp-Editor][TestErosionHandler.GetNextVertexBasedOnDirection]
+      name: GetNextVertexBasedOnDirection
+      fullName: TestErosionHandler.GetNextVertexBasedOnDirection
+      resultStatus: 1
+      duration: 0.0233139
+      messages: 
+      output: 'You are trying to create a MonoBehaviour using the ''new'' keyword. 
+        This is not allowed.  MonoBehaviours can only be added using AddComponent().
+        Alternatively, your script can inherit from ScriptableObject or no base class
+        at all
+
+'
+      stacktrace: 
+      notRunnable: 0
+      ignoredOrSkipped: 0
+      description: 
+      isSuite: 0
+      categories:
+      - Uncategorized
+      parentId: 1001
+      parentUniqueId: Assembly-CSharp-Editor.dll/[Assembly-CSharp-Editor][TestErosionHandler][suite]
+    m_ResultText: 'GetLeftAndRightNeighbourBasedOnDirections_Succsess (0,029s)
 
       ---
 
@@ -649,7 +670,7 @@ MonoBehaviour:
       your script can inherit from ScriptableObject or no base class at all'
     m_ResultStacktrace: 
     m_TestListState:
-      scrollPos: {x: 0, y: 0}
+      scrollPos: {x: 0, y: 8}
       m_SelectedIDs: f8d870f3
       m_LastClickedID: -210708232
       m_ExpandedIDs: 57cdfcb89e8f2815744b1926ffffff7f
@@ -732,8 +753,8 @@ MonoBehaviour:
     m_IsLocked: 0
   m_FolderTreeState:
     scrollPos: {x: 0, y: 38}
-    m_SelectedIDs: 684f0000
-    m_LastClickedID: 20328
+    m_SelectedIDs: 664f0000
+    m_LastClickedID: 20326
     m_ExpandedIDs: 00000000164f0000184f00001a4f00001c4f00001e4f0000204f000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
@@ -892,7 +913,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 780f0000
       m_LastClickedID: 0
-      m_ExpandedIDs: dcddffffecdefffffedfffff18e1ffff24e2ffff3ce3ffff50e4ffff5ee5ffff80e6ffff96e7ffffa2e8ffff58eaffff7aebffff48faffff36fbffff
+      m_ExpandedIDs: aaf7ffffaef8ffffb6f9ffff36fbffff
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 

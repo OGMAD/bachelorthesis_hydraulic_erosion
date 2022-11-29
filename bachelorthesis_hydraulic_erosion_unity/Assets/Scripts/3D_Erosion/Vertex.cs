@@ -77,7 +77,7 @@ public class Vertex
         List<Vertex> Neighbours = GetNeighbours();
         Neighbours.Sort(delegate (Vertex x, Vertex y) { return x.YCoord.CompareTo(y.YCoord); });
 
-        float LowestNeighbour = Neighbours[0].YCoord;
+        double LowestNeighbour = Neighbours[0].YCoord;
 
         #region check if there is an lowest neighbour in direction
         if (Direction == 0 && NeighbourLeft.YCoord == LowestNeighbour)
@@ -148,5 +148,116 @@ public class Vertex
         }
         #endregion
 
+    }
+
+    public bool ReturnFalseIfSomeNeighbourIsNull()
+    {
+        if (NeighbourLeft == null)
+        {
+            return false;
+        }
+        else if (NeighbourUpperLeft == null)
+        {
+            return false;
+        }
+        else if (NeighbourUpper == null)
+        {
+            return false;
+        }
+        else if (NeighbourUpperRight == null)
+        {
+            return false;
+        }
+        else if (NeighbourRight == null)
+        {
+            return false;
+        }
+        else if (NeighbourLowerRight == null)
+        {
+            return false;
+        }
+        else if (NeighbourLower == null)
+        {
+            return false;
+        }
+        else if (NeighbourLowerLeft == null)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    public (Vertex, Vertex) GetLeftAndRightNeighbourBasedOnDirections(Vertex LastVertex)
+    {
+        if (this == LastVertex.NeighbourLeft)
+        {
+            return (NeighbourLower, NeighbourUpper);
+        }
+        else if (this == LastVertex.NeighbourUpperLeft)
+        {
+            return (NeighbourLeft, NeighbourRight);
+        }
+        else if (this == LastVertex.NeighbourUpper)
+        {
+            return (NeighbourLeft, NeighbourRight);
+        }
+        else if (this == LastVertex.NeighbourUpperRight)
+        {
+            return (NeighbourUpper, NeighbourLower);
+        }
+        else if (this == LastVertex.NeighbourRight)
+        {
+            return (NeighbourUpper, NeighbourLower);
+        }
+        else if (this == LastVertex.NeighbourLowerRight)
+        {
+            return (NeighbourRight, NeighbourLeft);
+        }
+        else if (this == LastVertex.NeighbourLower)
+        {
+            return (NeighbourRight, NeighbourLeft);
+        }
+        else
+        {
+            return (NeighbourLower, NeighbourUpper);
+        }
+    }
+    public Vertex GetNextVertexBasedOnDirection(Vertex LastVertex)
+    {
+        if (this == LastVertex.NeighbourLeft)
+        {
+            return NeighbourLeft;
+        }
+        else if (this == LastVertex.NeighbourUpperLeft)
+        {
+            return NeighbourUpperLeft;
+        }
+        else if (this == LastVertex.NeighbourUpper)
+        {
+            return NeighbourUpper;
+        }
+        else if (this == LastVertex.NeighbourUpperRight)
+        {
+            return NeighbourUpperRight;
+        }
+        else if (this == LastVertex.NeighbourRight)
+        {
+            return NeighbourRight;
+        }
+        else if (this == LastVertex.NeighbourLowerRight)
+        {
+            return NeighbourLowerRight;
+        }
+        else if (this == LastVertex.NeighbourLower)
+        {
+            return NeighbourLower;
+        }
+        else
+        {
+            return NeighbourLowerLeft;
+        }
     }
 }
