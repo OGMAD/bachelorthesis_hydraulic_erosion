@@ -4,11 +4,6 @@ using UnityEngine;
 
 public class Embet : MonoBehaviour
 {
-    private float[,] PathTraces;
-    public Embet(float[,] PathTracesGet)
-    {
-        PathTraces = PathTracesGet;
-    }
     public void EmbedErosionInLandscape(Vertex LastVertex, Vertex CurrentVertex)
     {
         if (CurrentVertex.ReturnFalseIfSomeNeighbourIsNull())
@@ -16,36 +11,36 @@ public class Embet : MonoBehaviour
             (Vertex, Vertex) LeftAndRightNeighbour = CurrentVertex.GetLeftAndRightNeighbourBasedOnDirections(LastVertex);
 
             Vertex LeftNeighbour = LeftAndRightNeighbour.Item1;
-            PathTraces[LeftNeighbour.XCoord, LeftNeighbour.ZCoord] = 0.75f;
+            LeftNeighbour.PathTrace = 0.75f;
             Vertex LeftNeighbourPlusOne = null;
             Vertex LeftNeighbourPlusTwo = null;
 
             Vertex RightNeighbour = LeftAndRightNeighbour.Item2;
-            PathTraces[RightNeighbour.XCoord, RightNeighbour.ZCoord] = 0.75f;
+            RightNeighbour.PathTrace = 0.75f;
             Vertex RightNeighbourPlusOne = null;
             Vertex RightNeighbourPlusTwo = null;
 
             if (LeftNeighbour.ReturnFalseIfSomeNeighbourIsNull())
             {
                 LeftNeighbourPlusOne = LeftNeighbour.GetNextVertexBasedOnDirection(CurrentVertex);
-                PathTraces[LeftNeighbourPlusOne.XCoord, LeftNeighbourPlusOne.ZCoord] = 0.5f;
+                LeftNeighbourPlusOne.PathTrace = 0.5f;
 
                 if (LeftNeighbourPlusOne.ReturnFalseIfSomeNeighbourIsNull())
                 {
                     LeftNeighbourPlusTwo = LeftNeighbourPlusOne.GetNextVertexBasedOnDirection(LeftNeighbour);
-                    PathTraces[LeftNeighbourPlusTwo.XCoord, LeftNeighbourPlusTwo.ZCoord] = 0.25f;
+                    LeftNeighbourPlusTwo.PathTrace = 0.25f;
                 }
             }
 
             if (RightNeighbour.ReturnFalseIfSomeNeighbourIsNull())
             {
                 RightNeighbourPlusOne = RightNeighbour.GetNextVertexBasedOnDirection(CurrentVertex);
-                PathTraces[RightNeighbourPlusOne.XCoord, RightNeighbourPlusOne.ZCoord] = 0.5f;
+                RightNeighbourPlusOne.PathTrace = 0.5f;
 
                 if (RightNeighbourPlusOne.ReturnFalseIfSomeNeighbourIsNull())
                 {
                     RightNeighbourPlusTwo = RightNeighbourPlusOne.GetNextVertexBasedOnDirection(RightNeighbour);
-                    PathTraces[RightNeighbourPlusTwo.XCoord, RightNeighbourPlusTwo.ZCoord] = 0.25f;
+                    RightNeighbourPlusTwo.PathTrace = 0.25f;
                 }
             }
 

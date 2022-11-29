@@ -13,6 +13,8 @@ public class Vertex
     public Vertex NeighbourLower;
     public Vertex NeighbourLowerLeft;
     
+    public float PathTrace { get; set; }
+
     public int XCoord { get; set; }
     private float _yCoord;
     public float YCoord
@@ -30,6 +32,7 @@ public class Vertex
         XCoord = xWidth;
         ZCoord = zDepth;
         YCoord = yHeight;
+        PathTrace = 0.0f;
     }
 
     private List<Vertex> GetNeighbours()

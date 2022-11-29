@@ -5,37 +5,27 @@ using UnityEngine;
 public class PathCalculations : MonoBehaviour
 {
     public List<Vertex>[] Paths { get; set; }
-    public float[,] PathTraces { get; set; }
 
     public void CalculatePath(int PathIndex, (Vertex, int) CurrentVertexAndDirection, int depth)
     {
+        #region Draw Traces
         Paths[PathIndex].Add(CurrentVertexAndDirection.Item1);
         if (depth < 10)
         {
-            PathTraces[CurrentVertexAndDirection.Item1.XCoord, CurrentVertexAndDirection.Item1.ZCoord] = 10.0f;
+            CurrentVertexAndDirection.Item1.PathTrace = 10.0f;
         }
         else
         {
-            PathTraces[CurrentVertexAndDirection.Item1.XCoord, CurrentVertexAndDirection.Item1.ZCoord] = 1.0f;
+            CurrentVertexAndDirection.Item1.PathTrace = 1.0f;
         }
+        #endregion
 
-
-        if
-            (
-            CurrentVertexAndDirection.Item1.NeighbourLeft != null &&
-            CurrentVertexAndDirection.Item1.NeighbourUpperLeft != null &&
-            CurrentVertexAndDirection.Item1.NeighbourUpper != null &&
-            CurrentVertexAndDirection.Item1.NeighbourUpperRight != null &&
-            CurrentVertexAndDirection.Item1.NeighbourRight != null &&
-            CurrentVertexAndDirection.Item1.NeighbourLowerRight != null &&
-            CurrentVertexAndDirection.Item1.NeighbourLower != null &&
-            CurrentVertexAndDirection.Item1.NeighbourLowerLeft != null
-            )
+        if (CurrentVertexAndDirection.Item1.ReturnFalseIfSomeNeighbourIsNull())
         {
-            (Vertex, int) NextVertex = CurrentVertexAndDirection.Item1.ClaculateNextVertex(CurrentVertexAndDirection.Item2);
-            if (CurrentVertexAndDirection.Item1.YCoord >= NextVertex.Item1.YCoord)
+            (Vertex, int) NextVertexAndDirection = CurrentVertexAndDirection.Item1.ClaculateNextVertex(CurrentVertexAndDirection.Item2);
+            if (CurrentVertexAndDirection.Item1.YCoord >= NextVertexAndDirection.Item1.YCoord)
             {
-                CalculatePath(PathIndex, NextVertex, (depth + 1));
+                CalculatePath(PathIndex, NextVertexAndDirection, (depth + 1));
             }
         }
     }

@@ -14,7 +14,6 @@ public class ErosionHandler : MonoBehaviour
     public float HighestPoint;
     public float LowestPoint;
     private Vertex[,] Vertices;
-    private float[,] PathTraces;
     private List<Vertex>[] Paths;
 
     private int Threadcount = 16;
@@ -41,7 +40,7 @@ public class ErosionHandler : MonoBehaviour
             Objectify();
 
             PathCalculations = new();
-            Embet = new(PathTraces);
+            Embet = new();
         }
         catch
         {
@@ -75,7 +74,6 @@ public class ErosionHandler : MonoBehaviour
             Paths[i] = new List<Vertex>();
         });
         PathCalculations.Paths = Paths;
-        PathCalculations.PathTraces = PathTraces;
 
         for (int RI = 0; RI < Runiterations; RI++)
         {
@@ -103,7 +101,6 @@ public class ErosionHandler : MonoBehaviour
             PathCalculations.CalculatePath(i, (CurrentVertex, rnd.Next(0, 7)), 0);
         });
         Paths = PathCalculations.Paths;
-        PathTraces = PathCalculations.PathTraces;
     }
 
     private void Erode()
@@ -167,16 +164,16 @@ public class ErosionHandler : MonoBehaviour
             {
                 float r;
                 float g;
-                if (PathTraces[x,y] != 0.0f)
+                if (Vertices[x, y].PathTrace != 0.0f)
                 {
-                    if((PathTraces[x, y] == 10.0f))
+                    if((Vertices[x, y].PathTrace == 10.0f))
                     {
                         g = 1.0f;
                         HeightMapWithPaths.SetPixel(x, y, new Color(0, g, 0));
                     }
                     else
                     {
-                        r = 1.0f * PathTraces[x, y];
+                        r = 1.0f * Vertices[x, y].PathTrace;
                         HeightMapWithPaths.SetPixel(x, y, new Color(r, 0, 0));
                     }
                 }
@@ -211,7 +208,6 @@ public class ErosionHandler : MonoBehaviour
     private void TransferHightmapToObjects()
     {
         Vertices = new Vertex[HeightMap.texture.height, HeightMap.texture.width];
-        PathTraces = new float[HeightMap.texture.height, HeightMap.texture.width];
 
         Vertices = CreateVertices(Vertices);
         FindNeighbours(Vertices, HeightMap);
@@ -225,7 +221,6 @@ public class ErosionHandler : MonoBehaviour
             for (int row = 0; row < HeightMap.texture.height; row++)
             {
                 vertices[row, column] = new Vertex(column, row, CalculateHeight(HeightMap.texture.GetPixel(row, column).r, true));
-                PathTraces[row, column] = 0.0f;
             }
         }
         return vertices;
